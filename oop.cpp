@@ -2,6 +2,7 @@
 #include <ctime>
 #include <windows.h>
 #include <conio.h>
+#include <string>
 
 using namespace std;
 
@@ -13,12 +14,29 @@ public:
 	}
 
 };
+
+class typeShip {
+public:
+	Ships(int typeShip, string nameCategoryShip) {
+		this->typeShip = typeShip;
+		this->nameCategoryShip = nameCategoryShip;
+	}
+private:
+	int typeShip;
+	string nameCategoryShip;
+};
+
 class Ships {
 public:
-	Ships() {
-		int NumDeck = 0;
-
+	Ships(int numDeck, typeShip categoryShip, string nameShip) {
+		this->numDeck = numDeck;
+		this->categoryShip = categoryShip;
+		this->nameShip = nameShip;
 	}
+private:
+	int numDeck;
+	typeShip categoryShip;
+	string nameShip;
 };
 
 int main()
