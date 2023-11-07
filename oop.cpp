@@ -73,7 +73,7 @@ public:
 		}
 		for (int dx = -1; dx <= 1; dx++) {
 			for (int dy = -1; dy <= 1; dy++) {
-				if (map[x + dx][y + dy].isShip) {
+				if (isCellInMap(x + dx, y + dy) && map[x + dx][y + dy].isShip) {
 					return false;
 				}
 			}
@@ -124,7 +124,7 @@ public:
 	}
 
 	bool isCellInMap(int x, int y) {
-		return(x >= 0) && (y >= 0) && (x < length) && (y < height);
+		return(x >= 0) && (y >= 0) && (x < height) && (y < length);
 	}
 
 	void createFleet(Cell(*map)[length]) {
@@ -176,7 +176,7 @@ void printMap(Cell (*map)[length]) {
 
 		for (int j = 0; j < length; j++) {
 			if (map[i][j].isShip) {
-				cout << map[i][j].isShip << " ";
+				cout << "O ";
 			}
 			else {
 				cout << "  ";
@@ -197,9 +197,13 @@ int main()
 	Cell map[height][length]; //двовимірний масив для прязки координат союзних кораблів на мапі
 	Cell enemyMap[height][length]; //двовимірний масив для прязки координат ворожих кораблів на мапі
 	Ships myShips;
+	Ships enemyShips;
 	myShips.createFleet(map);
+	enemyShips.createFleet(enemyMap);
 	
 	
 	printMap(map);
+	cout << endl<<endl;
+	printMap(enemyMap);
 
 }
