@@ -158,7 +158,6 @@ private:
 	}
 };
 
-
 void printMap(Cell(*map)[length]) {
 	cout << "   ";
 	for (int j = 1; j <= length; j++) {
@@ -175,13 +174,14 @@ void printMap(Cell(*map)[length]) {
 
 		for (int j = 0; j < length; j++) {
 			if (map[i][j].isShip) {
+				if (map[i][j].isHit) {
+					cout << "X ";
+					continue;
+				}
 				cout << "O ";
 			}
-			else if (map[i][j].isHit) {
-				cout << "X ";
-			}
 			else if (map[i][j].isMiss) {
-				cout << "` ";
+				cout << "* ";
 			}
 			else {
 				cout << "  ";
@@ -193,41 +193,102 @@ void printMap(Cell(*map)[length]) {
 	cout << "  |_____________________|";
 }
 
-void playerAttack(Cell(*enemyMap)[length]) {
-	cout << "Enter coordinates to attack (e.g., a1): ";
-	char letter;
-	int number;
-	cin >> letter >> number;
-
-	int x = letter - 'a';
-	int y = number - 1;
-
-	if (enemyMap[x][y].isMiss || enemyMap[x][y].isHit) {
-		cout << "You've already attacked this cell. Try again." << endl;
-		playerAttack(enemyMap);
+class Game {
+public:
+	Game(){
+		myShips.createFleet(map);
+		enemyShips.createFleet(enemyMap);
 	}
-	else {
-		if (enemyMap[x][y].isShip) {
-			cout << "Hit!" << endl;
-			enemyMap[x][y].isHit = true;
-		}
-		else {
-			cout << "Miss!" << endl;
-			enemyMap[x][y].isMiss = true;
+	Cell map[height][length];
+	Cell enemyMap[height][length];
+	Ships myShips;
+	Ships enemyShips;
+	bool gameEnded = 0;
+	bool playerTurn = 1;
+	void startGame(){
+		while (!gameEnded) {
+
+			if (playerTurn) {
+				cout << "Your Map:" << endl;
+				printMap(map);
+
+				cout << endl << "Enemy's Map:" << endl;
+				printMap(enemyMap);
+				attack(enemyMap);
+			}
+			else {
+				attack(map);
+			}
+
+			// Check if the game is over
+			if (enemyShips.countReadyShip == 0) {
+				cout << "Congratulations! You've destroyed all enemy ships. You win!" << endl;
+				break;
+			}
+
+
+			// Check if the game is over
+			if (myShips.countReadyShip == 0) {
+				cout << "Game over! All your ships have been destroyed. You lose." << endl;
+				break;
+			}
 		}
 	}
-}
+private:
+	void attack(Cell(*currentMap)[length]) {
+		int x;
+		int y;
+
+		if (playerTurn) {
+			cout << "Enter coordinates: " << endl;
+			char letter;
+			int number;
+			cin >> letter >> number;
+
+			x = letter - 'a';
+			y = number - 1;
+
+			if (!isCellInMap(x, y)) {
+				cout << endl << "Wrong coordinates" << endl;
+				attack(currentMap);
+			}
+		}
+		else if (!playerTurn) {
+			x = rand() % height;
+			y = rand() % length;
+			
+		}
+		if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
+			cout << endl << "This cell already hitted" << endl;
+			attack(currentMap);
+		}
+		if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
+			currentMap[x][y].isMiss = 1;
+			playerTurn = !playerTurn;
+		}
+		if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
+			currentMap[x][y].isHit = 1;
+			isShipDestroyed();
+		}
+
+	}
+
+	void isShipDestroyed() {
+
+	}
+
+	bool isCellInMap(int x, int y) {
+		return(x >= 0) && (y >= 0) && (x < height) && (y < length);
+	}
+};
+
 
 
 int main()
 {
 	srand(time(NULL));
-	Cell map[height][length]; //двовимірний масив для прязки координат союзних кораблів на мапі
-	Cell enemyMap[height][length]; //двовимірний масив для прязки координат ворожих кораблів на мапі
-	Ships myShips;
-	Ships enemyShips;
-	myShips.createFleet(map);
-	enemyShips.createFleet(enemyMap);
+	Game game;
+	game.startGame();
 	
 	
 	return 0;
