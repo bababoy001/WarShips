@@ -16,12 +16,12 @@ class Cell{
 public:
 	Cell() {
 		isShip = 0;
-		isShoot = 0;
+		isMiss = 0;
 		isHit = 0;
 		isAlive = 0;
 	}
 	bool isShip;
-	bool isShoot;
+	bool isMiss;
 	bool isHit;
 	bool isAlive;
 };
@@ -85,8 +85,8 @@ public:
 		bool wrongPlace;
 		do {
 			wrongPlace = 0;
-			int x = rand() % 10;
-			int y = rand() % 10;
+			int x = rand() % height;
+			int y = rand() % length;
 			for (int i = 0; i < ship_temp->numDeck; i++) {
 				if (ship_temp->horizontal) {
 					if (!isCellForShip(map, x + i, y)) {
@@ -159,17 +159,16 @@ private:
 };
 
 
-void printMap(Cell (*map)[length]) {
+void printMap(Cell(*map)[length]) {
 	cout << "   ";
 	for (int j = 1; j <= length; j++) {
-		cout << " " << j ;
+		cout << " " << j;
 	}
 
 	cout << endl << "   _____________________" << endl;
 	cout << "  |                     |" << endl;
 
 	for (int i = 0; i < height; i++) {
-		
 		char letter = 'a' + i;
 
 		cout << letter << " | ";
@@ -178,10 +177,15 @@ void printMap(Cell (*map)[length]) {
 			if (map[i][j].isShip) {
 				cout << "O ";
 			}
+			else if (map[i][j].isHit) {
+				cout << "X ";
+			}
+			else if (map[i][j].isMiss) {
+				cout << "` ";
+			}
 			else {
 				cout << "  ";
 			}
-			
 		}
 
 		cout << "|" << endl;
@@ -189,6 +193,30 @@ void printMap(Cell (*map)[length]) {
 	cout << "  |_____________________|";
 }
 
+void playerAttack(Cell(*enemyMap)[length]) {
+	cout << "Enter coordinates to attack (e.g., a1): ";
+	char letter;
+	int number;
+	cin >> letter >> number;
+
+	int x = letter - 'a';
+	int y = number - 1;
+
+	if (enemyMap[x][y].isMiss || enemyMap[x][y].isHit) {
+		cout << "You've already attacked this cell. Try again." << endl;
+		playerAttack(enemyMap);
+	}
+	else {
+		if (enemyMap[x][y].isShip) {
+			cout << "Hit!" << endl;
+			enemyMap[x][y].isHit = true;
+		}
+		else {
+			cout << "Miss!" << endl;
+			enemyMap[x][y].isMiss = true;
+		}
+	}
+}
 
 
 int main()
@@ -202,8 +230,6 @@ int main()
 	enemyShips.createFleet(enemyMap);
 	
 	
-	printMap(map);
-	cout << endl<<endl;
-	printMap(enemyMap);
+	return 0;
 
 }
