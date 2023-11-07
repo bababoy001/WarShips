@@ -13,6 +13,13 @@ public:
 	}
 
 };
+class Ships {
+public:
+	Ships() {
+		int NumDeck = 0;
+
+	}
+};
 
 int main()
 {
