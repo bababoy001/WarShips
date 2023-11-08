@@ -55,12 +55,38 @@
 	class Ships {
 	public:
 		Ships() {
-		
+			countReadyShip = 0;
 		}
 		vector <Ship> allShips;
-		int countReadyShip = 0;
-	
+		int countReadyShip;
 
+		void createFleet(Cell(*map)[length]) {
+			Ship fourDecker(4, 1, "4", rand() % 2);
+			makeShip(&fourDecker, map, true);
+
+			for (int i = 0; i < 2; ++i) {
+				Ship threeDecker(3, 1, "3", rand() % 2);
+				makeShip(&threeDecker, map, true);
+			}
+
+			for (int i = 0; i < 3; ++i) {
+				Ship twoDecker(2, 1, "2", rand() % 2);
+				makeShip(&twoDecker, map, true);
+			}
+
+			for (int i = 0; i < 4; ++i) {
+				Ship oneDecker(1, 1, "1", rand() % 2);
+				makeShip(&oneDecker, map, true);
+			}
+		}
+	private:
+		void fromVectorToMap(Ship* ship_temp, Cell(*map)[length]) {
+			for (int i = 0; i < ship_temp->numDeck; i++) {
+				map[ship_temp->coorX[i]][ship_temp->coorY[i]].isShip = 1;
+				pair<int, int> pairXY = make_pair(ship_temp->coorX[i], ship_temp->coorY[i]);
+				allShips.at(countReadyShip).coordinates[pairXY] = *ship_temp;
+			}
+		}
 		void makeShip(Ship* ship_temp, Cell(*map)[length], bool random) {
 			if (random) {
 				randomPlaceShip(ship_temp, map);
@@ -70,24 +96,10 @@
 			}
 
 		}
-
-		bool isCellForShip(Cell(*map)[length], int x, int y) {
-
-			if (!isCellInMap(x, y) || map[x][y].isShip)
-			{
-				return false;
-			}
-			for (int dx = -1; dx <= 1; dx++) {
-				for (int dy = -1; dy <= 1; dy++) {
-					if (isCellInMap(x + dx, y + dy) && map[x + dx][y + dy].isShip) {
-						return false;
-					}
-				}
-			}
-			return true;
+		bool isCellInMap(int x, int y) {
+			return(x >= 0) && (y >= 0) && (x < height) && (y < length);
 		}
-
-		void randomPlaceShip(Ship *ship_temp, Cell(*map)[length]) {
+		void randomPlaceShip(Ship* ship_temp, Cell(*map)[length]) {
 			bool wrongPlace;
 			do {
 				wrongPlace = 0;
@@ -128,37 +140,20 @@
 			countReadyShip++;
 
 		}
+		bool isCellForShip(Cell(*map)[length], int x, int y) {
 
-		bool isCellInMap(int x, int y) {
-			return(x >= 0) && (y >= 0) && (x < height) && (y < length);
-		}
-
-		void createFleet(Cell(*map)[length]) {
-			Ship fourDecker(4, 1, "4", rand() % 2);
-			makeShip(&fourDecker, map, true);
-
-			for (int i = 0; i < 2; ++i) {
-				Ship threeDecker(3, 1, "3", rand() % 2);
-				makeShip(&threeDecker, map, true);
+			if (!isCellInMap(x, y) || map[x][y].isShip)
+			{
+				return false;
 			}
-
-			for (int i = 0; i < 3; ++i) {
-				Ship twoDecker(2, 1, "2", rand() % 2);
-				makeShip(&twoDecker, map, true);
+			for (int dx = -1; dx <= 1; dx++) {
+				for (int dy = -1; dy <= 1; dy++) {
+					if (isCellInMap(x + dx, y + dy) && map[x + dx][y + dy].isShip) {
+						return false;
+					}
+				}
 			}
-
-			for (int i = 0; i < 4; ++i) {
-				Ship oneDecker(1, 1, "1", rand() % 2);
-				makeShip(&oneDecker, map, true);
-			}
-		}
-	private:
-		void fromVectorToMap(Ship* ship_temp, Cell(*map)[length]) {
-			for (int i = 0; i < ship_temp->numDeck; i++) {
-				map[ship_temp->coorX[i]][ship_temp->coorY[i]].isShip = 1;
-				pair<int, int> pairXY = make_pair(ship_temp->coorX[i], ship_temp->coorY[i]);
-				allShips.at(countReadyShip).coordinates[pairXY] = *ship_temp;
-			}
+			return true;
 		}
 	};
 
@@ -167,13 +162,15 @@
 		Game(){
 			myShips.createFleet(map);
 			enemyShips.createFleet(enemyMap);
+			gameEnded = 0;
+			playerTurn = 1;
 		}
 		Cell map[height][length];
 		Cell enemyMap[height][length];
 		Ships myShips;
 		Ships enemyShips;
-		bool gameEnded = 0;
-		bool playerTurn = 1;
+		bool gameEnded;
+		bool playerTurn;
 		void startGame(){
 			while (!gameEnded) {
 
