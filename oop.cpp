@@ -37,11 +37,13 @@
 			this->typeShip = typeShip;
 			this->nameCategoryShip = nameCategoryShip;
 			this->horizontal = horizontal; 
+			this->countHit = numDeck;
 		}
 
 		int numDeck;
 		int typeShip;
 		bool horizontal;
+		int countHit;
 		string nameCategoryShip;
 		map<pair<int, int>, Ship> coordinates;
 		vector<int> coorX;
@@ -132,25 +134,21 @@
 		}
 
 		void createFleet(Cell(*map)[length]) {
-			// Создание 1 четырехпалубного корабля
-			Ship fourDecker(4, 1, "четырехпалубный", rand() % 2);
+			Ship fourDecker(4, 1, "4", rand() % 2);
 			makeShip(&fourDecker, map, true);
 
-			// Создание 2 трехпалубных кораблей
 			for (int i = 0; i < 2; ++i) {
-				Ship threeDecker(3, 1, "трехпалубный", rand() % 2);
+				Ship threeDecker(3, 1, "3", rand() % 2);
 				makeShip(&threeDecker, map, true);
 			}
 
-			// Создание 3 двупалубных кораблей
 			for (int i = 0; i < 3; ++i) {
-				Ship twoDecker(2, 1, "двупалубный", rand() % 2);
+				Ship twoDecker(2, 1, "2", rand() % 2);
 				makeShip(&twoDecker, map, true);
 			}
 
-			// Создание 4 однопалубных кораблей
 			for (int i = 0; i < 4; ++i) {
-				Ship oneDecker(1, 1, "однопалубный", rand() % 2);
+				Ship oneDecker(1, 1, "1", rand() % 2);
 				makeShip(&oneDecker, map, true);
 			}
 		}
@@ -163,41 +161,6 @@
 			}
 		}
 	};
-
-	void printMap(Cell(*map)[length]) {
-		cout << "   ";
-		for (int j = 1; j <= length; j++) {
-			cout << " " << j;
-		}
-
-		cout << endl << "   _____________________" << endl;
-		cout << "  |                     |" << endl;
-
-		for (int i = 0; i < height; i++) {
-			char letter = 'a' + i;
-
-			cout << letter << " | ";
-
-			for (int j = 0; j < length; j++) {
-				if (map[i][j].isShip) {
-					if (map[i][j].isHit) {
-						cout << "X ";
-						continue;
-					}
-					cout << "O ";
-				}
-				else if (map[i][j].isMiss) {
-					cout << "* ";
-				}
-				else {
-					cout << "  ";
-				}
-			}
-
-			cout << "|" << endl;
-		}
-		cout << "  |_____________________|";
-	}
 
 	class Game {
 	public:
@@ -215,10 +178,12 @@
 			while (!gameEnded) {
 
 				if (playerTurn) {
+					system("cls");
 					cout << "Your Map:" << endl;
 					printMap(map);
 
 					cout << endl << "Enemy's Map:" << endl;
+
 					printMap(enemyMap);
 					attack(enemyMap);
 				}
@@ -226,17 +191,15 @@
 					attack(map);
 				}
 
-				// Check if the game is over
 				if (enemyShips.countReadyShip == 0) {
 					cout << "Congratulations! You've destroyed all enemy ships. You win!" << endl;
-					break;
+					gameEnded = 1;
 				}
 
 
-				// Check if the game is over
 				if (myShips.countReadyShip == 0) {
 					cout << "Game over! All your ships have been destroyed. You lose." << endl;
-					break;
+					gameEnded = 1;
 				}
 			}
 		}
@@ -246,7 +209,7 @@
 			int y;
 
 			if (playerTurn) {
-				cout << "Enter coordinates: " << endl;
+				cout << endl << "Enter coordinates: " << endl;
 				char letter;
 				int number;
 				cin >> letter >> number;
@@ -274,21 +237,98 @@
 			}
 			if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
 				currentMap[x][y].isHit = 1;
-				isShipDestroyed();
+				isShipDestroyed(x, y, currentMap);
 			}
 
 		}
 
-		void isShipDestroyed() {
+		void isShipDestroyed(int x, int y, Cell(*currentMap)[length]) {
+			pair<int, int> pairXY = make_pair(x, y);
+			Ship* tempShip = nullptr;
 
+			vector<Ship>& ships = (currentMap == map) ? myShips.allShips : enemyShips.allShips;
+
+			for (Ship& ship : ships) {
+				auto it = ship.coordinates.find(pairXY);
+				if (it != ship.coordinates.end()) {
+					tempShip = &ship;
+					break;
+				}
+			}
+
+			if (tempShip) {
+				tempShip->countHit -= 1;
+
+				if (tempShip->countHit == 0) {
+					destroyShip(currentMap, tempShip);
+
+					if (currentMap == map) {
+						myShips.countReadyShip--;
+					}
+					else {
+						enemyShips.countReadyShip--;
+					}
+				}
+			}
 		}
+
+		void destroyShip(Cell(*currentMap)[length], Ship* tempShip) {
+			int x;
+			int y;
+			for (int i = 0; i < tempShip->numDeck; i++) {
+				x = tempShip->coorX[i];
+				y = tempShip->coorY[i];
+				for (int dx = -1; dx <= 1; dx++) {
+					for (int dy = -1; dy <= 1; dy++) {
+						if (isCellInMap(x + dx, y + dy) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
+							currentMap[x + dx][y + dy].isMiss = 1;
+						}
+					}
+				}
+			}
+		}
+
+
 
 		bool isCellInMap(int x, int y) {
 			return(x >= 0) && (y >= 0) && (x < height) && (y < length);
 		}
+
+		void printMap(Cell(*map)[length]) {
+			cout << "   ";
+			for (int j = 1; j <= length; j++) {
+				cout << " " << j;
+			}
+
+			cout << endl << "   _____________________" << endl;
+			cout << "  |                     |" << endl;
+
+			for (int i = 0; i < height; i++) {
+				char letter = 'a' + i;
+
+				cout << letter << " | ";
+
+				for (int j = 0; j < length; j++) {
+					if (map[i][j].isShip) {
+						if (map[i][j].isHit) {
+							cout << "X ";
+							continue;
+						}
+						cout << "O ";
+					}
+					else if (map[i][j].isMiss) {
+						cout << "* ";
+					}
+					else {
+						cout << "  ";
+					}
+				}
+
+				cout << "|" << endl;
+			}
+			cout << "  |_____________________|";
+		}
 	};
-
-
 
 	int main()
 	{
