@@ -5,11 +5,8 @@
 	#include <string>
 	#include <vector>
 	#include <map>
-
-	#define height 10
-	#define length 10
-	#define countShip 10
-
+#define height 10
+#define length 10
 	using namespace std;
 
 
@@ -28,30 +25,165 @@
 		bool isAlive;
 	};
 
-
-	class Ship {
+	class Map {
 	public:
-		Ship() : numDeck(0), typeShip(0), horizontal(false) {}
-		Ship(int numDeck, int typeShip, string nameCategoryShip, bool horizontal) {
-			this->numDeck = numDeck;
-			this->typeShip = typeShip;
-			this->nameCategoryShip = nameCategoryShip;
-			this->horizontal = horizontal; 
-			this->countHit = numDeck;
+		
+	};
+
+	class Coordinates {
+	public:
+		Coordinates() {
+
+		}
+		vector<pair<int, int>> coorXY;
+
+	};
+
+	class usualFunc {
+	public:
+		bool isCellInMap(int x, int y) {
+			return(x >= 0) && (y >= 0) && (x < height) && (y < length);
 		}
 
+		bool isCellForShip(Cell(*map)[length], int x, int y) {
+
+			if (!isCellInMap(x, y) || map[x][y].isShip)
+			{
+				return false;
+			}
+			for (int dx = -1; dx <= 1; dx++) {
+				for (int dy = -1; dy <= 1; dy++) {
+					if (isCellInMap(x + dx, y + dy) && map[x + dx][y + dy].isShip) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+	};
+	
+	class Ship {
+	public:
+		Ship() : numDeck(0), horizontal(false), countHit(numDeck){}
+		Ship(int numDeck, string name, bool horizontal) {
+			this->numDeck = numDeck;
+			this->name = name;
+			this->horizontal = horizontal;
+			this->countHit = numDeck;
+		}
+		Ship(int numDeck, bool horizontal) {
+			this->numDeck = numDeck;
+			this->horizontal = horizontal;
+			this->countHit = numDeck;
+		}
 		int numDeck;
-		int typeShip;
 		bool horizontal;
 		int countHit;
-		string nameCategoryShip;
-		map<pair<int, int>, Ship> coordinates;
-		vector<int> coorX;
-		vector<int> coorY;
+		string name;
+
+		Coordinates coord;
+		map<pair<int, int>, Ship> coordinatesShip;
+		map<pair<int, int>, Ship> coordinatesArroundShip;
+
+		usualFunc check;
+		
+		virtual void randomPlaceShip(Ship* ship_temp, Cell(*map)[length]) {
+			bool wrongPlace;
+			do {
+				wrongPlace = 0;
+				int x = rand() % height;
+				int y = rand() % length;
+				for (int i = 0; i < ship_temp->numDeck; i++) {
+					if (ship_temp->horizontal) {
+						if (!check.isCellForShip(map, x + i, y)) {
+							wrongPlace = 1;
+							break;
+						}
+						else {
+							pair<int, int> pairXY = make_pair(x + i, y);
+							ship_temp->coordinatesShip[pairXY] = *ship_temp;
+							ship_temp->coord.coorXY.push_back(pairXY);
+						}
+
+					}
+					else if (!ship_temp->horizontal) {
+						if (!check.isCellForShip(map, x, y + i)) {
+							wrongPlace = 1;
+							break;
+						}
+						else {
+							pair<int, int> pairXY = make_pair(x, y + i);
+							ship_temp->coordinatesShip[pairXY] = *ship_temp;
+							ship_temp->coord.coorXY.push_back(pairXY);
+						}
+					}
+				}
+				if (wrongPlace) {
+					ship_temp->horizontal = !ship_temp->horizontal;
+					ship_temp->coordinatesShip.clear();
+					ship_temp->coord.coorXY.clear();
+				}
+			} while (wrongPlace);
+
+			fromVectorToMap(ship_temp, map);
+		}
+		void fromVectorToMap(Ship* ship_temp, Cell(*map)[length]) {
+			for (int i = 0; i < ship_temp->numDeck; i++) {
+				map[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].isShip = 1;
+			}
+		}
+	};
+
+	
+
+	class defoltShip : public Ship {
+	public:
+		defoltShip(int numDeck, bool horizontal) {
+			this->numDeck = numDeck;
+			this->horizontal = horizontal;
+			this->countHit = numDeck;
+		}
+		int numDeck;
+		bool horizontal;
+		int countHit;
+		string name;
+		
+	};
+
+	class fuelShip : public Ship {
+	public:
+		fuelShip(int numDeck, bool horizontal) {
+			this->numDeck = numDeck;
+			this->horizontal = horizontal;
+			this->countHit = numDeck;
+		}
+		int numDeck;
+		bool horizontal;
+		int countHit;
+		string name;
+	};
+
+	class zalpShip : public Ship {
+	public:
+		zalpShip(int numDeck, bool horizontal) {
+			this->numDeck = numDeck;
+			this->horizontal = horizontal;
+			this->countHit = numDeck;
+		}
+		int numDeck;
+		bool horizontal;
+		int countHit;
+		string name;
 	};
 
 	class Print {
 	public:
+		/*void sizeMap(int &height, int &length) {
+			cout << "Enter height map";
+			cin >> height;
+			cout << "Enter length map";
+			cin >> length;
+		}*/
 		void printMap(Cell(*map)[length]) {
 			cout << "   ";
 			for (int j = 1; j <= length; j++) {
@@ -106,109 +238,65 @@
 		vector <Ship> allShips;
 		int countReadyShip;
 
-		void createFleet(Cell(*map)[length]) {
-			Ship fourDecker(4, 1, "4", rand() % 2);
-			makeShip(&fourDecker, map, true);
+		void createFleet(Cell(*map)[length],  int random){
+			int max_length_ship = 4;
+			int max = (height * length * 0.2);
+			int max_unique = (max*0.2)/4;
+			int fuel = 0; // зробити функцію запросу для користувача
+			int zalp = 0; // зробити функцію запросу для користувача + перевірка
 
-			/*		for (int i = 0; i < 2; ++i) {
-						Ship threeDecker(3, 1, "3", rand() % 2);
-						makeShip(&threeDecker, map, true);
-					}
-
-					for (int i = 0; i < 3; ++i) {
-						Ship twoDecker(2, 1, "2", rand() % 2);
-						makeShip(&twoDecker, map, true);
-					}
-
-					for (int i = 0; i < 4; ++i) {
-						Ship oneDecker(1, 1, "1", rand() % 2);
-						makeShip(&oneDecker, map, true);
-					}*/
-		}
-	
-	private:
-		void fromVectorToMap(Ship* ship_temp, Cell(*map)[length]) {
-			for (int i = 0; i < ship_temp->numDeck; i++) {
-				map[ship_temp->coorX[i]][ship_temp->coorY[i]].isShip = 1;
-				pair<int, int> pairXY = make_pair(ship_temp->coorX[i], ship_temp->coorY[i]);
-				allShips.at(countReadyShip).coordinates[pairXY] = *ship_temp;
-			}
-		}
-		void makeShip(Ship* ship_temp, Cell(*map)[length], bool random) {
+			int temp_size_ship = 1;
 			if (random) {
-				randomPlaceShip(ship_temp, map);
+				int currnt = 0;
+				while(currnt < max) {
+					if (fuel) {
+						//Ship* temp_ship = new fuelShip(4, rand() % 2);
+						fuelShip temp_ship(4, rand() % 2);
+						temp_ship.randomPlaceShip(&temp_ship, map);
+						allShips.push_back(temp_ship);
+						countReadyShip++;
+						currnt += 4;
+						fuel--;
+						continue;
+					}
+					if (zalp) {
+						zalpShip temp_ship(4, rand() % 2);
+						temp_ship.randomPlaceShip(&temp_ship, map);
+						allShips.push_back(temp_ship);
+						countReadyShip++;
+						currnt += 4;
+						zalp--;
+						continue;
+					}
+
+					temp_size_ship = 1 + rand() % max_length_ship;
+					do{
+						if ((temp_size_ship + currnt) > max) {
+							temp_size_ship--;
+						}
+					}while ((temp_size_ship + currnt) > max);
+					cout <<endl<< temp_size_ship;
+					Ship temp_ship(temp_size_ship, rand() % 2);
+					temp_ship.randomPlaceShip(&temp_ship, map);
+					allShips.push_back(temp_ship);
+					countReadyShip++;
+					currnt += temp_size_ship;
+				}
 			}
 			if (!random) {
 				//PlaceShip(*ship_temp);
 			}
-
 		}
-		bool isCellInMap(int x, int y) {
-			return(x >= 0) && (y >= 0) && (x < height) && (y < length);
-		}
-		void randomPlaceShip(Ship* ship_temp, Cell(*map)[length]) {
-			bool wrongPlace;
-			do {
-				wrongPlace = 0;
-				int x = rand() % height;
-				int y = rand() % length;
-				for (int i = 0; i < ship_temp->numDeck; i++) {
-					if (ship_temp->horizontal) {
-						if (!isCellForShip(map, x + i, y)) {
-							wrongPlace = 1;
-							break;
-						}
-						else {
-							ship_temp->coorX.push_back(x + i);
-							ship_temp->coorY.push_back(y);
-						}
-
-					}
-					else if (!ship_temp->horizontal) {
-						if (!isCellForShip(map, x, y + i)) {
-							wrongPlace = 1;
-							break;
-						}
-						else {
-							ship_temp->coorX.push_back(x);
-							ship_temp->coorY.push_back(y + i);
-						}
-					}
-				}
-				if (wrongPlace) {
-					ship_temp->horizontal = !ship_temp->horizontal;
-					ship_temp->coorX.clear();
-					ship_temp->coorY.clear();
-				}
-			} while (wrongPlace);
-
-			allShips.push_back(*ship_temp);
-			fromVectorToMap(ship_temp, map);
-			countReadyShip++;
-
-		}
-		bool isCellForShip(Cell(*map)[length], int x, int y) {
-
-			if (!isCellInMap(x, y) || map[x][y].isShip)
-			{
-				return false;
-			}
-			for (int dx = -1; dx <= 1; dx++) {
-				for (int dy = -1; dy <= 1; dy++) {
-					if (isCellInMap(x + dx, y + dy) && map[x + dx][y + dy].isShip) {
-						return false;
-					}
-				}
-			}
-			return true;
-		}
+	
+	private:
+		
 	};
 
 	class Game {
 	public:
 		Game(){
-			myShips.createFleet(map);
-			enemyShips.createFleet(enemyMap);
+			myShips.createFleet(map, 1);
+			enemyShips.createFleet(enemyMap, 1);
 			gameEnded = 0;
 			playerTurn = 1;
 		}
@@ -216,14 +304,26 @@
 		Cell enemyMap[height][length];
 		Ships myShips;
 		Ships enemyShips;
+		usualFunc check;
 		bool gameEnded;
 		bool playerTurn;
+		
+
 		Print printAll;
+		
+		void enterSizeMap(){
+			/*printAll.sizeMap(height, length);*/
+			/*map.resize(height, vector<Cell>(length));
+			enemyMap.resize(height, vector<Cell>(length));*/
+			
+		}
+
 		void startGame(){
+			enterSizeMap();
 			while (!gameEnded) {
 
 				if (playerTurn) {
-					system("cls");
+					/*system("cls");*/
 
 					printAll.printSentence("Your Map:");
 					printAll.printMap(map);
@@ -264,7 +364,7 @@
 				x = letter - 'a';
 				y = number - 1;
 
-				if (!isCellInMap(x, y)) {
+				if (!check.isCellInMap(x, y)) {
 					printAll.printSentence("Wrong coordinates");
 					attack(currentMap);
 				}
@@ -296,8 +396,8 @@
 			vector<Ship>& ships = (currentMap == map) ? myShips.allShips : enemyShips.allShips;
 
 			for (Ship& ship : ships) {
-				auto it = ship.coordinates.find(pairXY);
-				if (it != ship.coordinates.end()) {
+				auto it = ship.coordinatesShip.find(pairXY);
+				if (it != ship.coordinatesShip.end()) {
 					tempShip = &ship;
 					break;
 				}
@@ -323,11 +423,11 @@
 			int x;
 			int y;
 			for (int i = 0; i < tempShip->numDeck; i++) {
-				x = tempShip->coorX[i];
-				y = tempShip->coorY[i];
+				x = tempShip->coord.coorXY[i].first;
+				y = tempShip->coord.coorXY[i].second;
 				for (int dx = -1; dx <= 1; dx++) {
 					for (int dy = -1; dy <= 1; dy++) {
-						if (isCellInMap(x + dx, y + dy) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
+						if (check.isCellInMap(x + dx, y + dy) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
 							currentMap[x + dx][y + dy].isMiss = 1;
 						}
 					}
@@ -335,19 +435,17 @@
 			}
 		}
 
-
-		bool isCellInMap(int x, int y) {
-			return(x >= 0) && (y >= 0) && (x < height) && (y < length);
-		}
-
 	};
 
 	int main()
 	{
 		srand(time(NULL));
+		
+		
 		Game game;
+		
+		
 		game.startGame();
-	
 	
 		return 0;
 
