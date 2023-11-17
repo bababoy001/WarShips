@@ -106,14 +106,50 @@
 
 		usualFunc check;
 
-		virtual void destroyShip(vector<vector<Cell>>& currentMap, int x,int y, int height , int length) {
-				for (int dx = -1; dx <= 1; dx++) {
-					for (int dy = -1; dy <= 1; dy++) {
-						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
-							currentMap[x + dx][y + dy].isMiss = 1;
+		virtual void randomPlaceShip(Ship* ship_temp, vector<vector<Cell>>& currentMap, int height, int length) {
+			bool wrongPlace;
+			do {
+				wrongPlace = 0;
+				int x = rand() % height;
+				int y = rand() % length;
+				for (int i = 0; i < ship_temp->numDeck; i++) {
+					if (ship_temp->horizontal) {
+						if (!check.isCellForShip(currentMap, x + i, y, height, length)) {
+							wrongPlace = 1;
+							break;
+						}
+						else {
+							pair<int, int> pairXY = make_pair(x + i, y);
+							ship_temp->coordinatesShip[pairXY] = *ship_temp;
+							ship_temp->coord.coorXY.push_back(pairXY);
+						}
+
+					}
+					else if (!ship_temp->horizontal) {
+						if (!check.isCellForShip(currentMap, x, y + i, height, length)) {
+							wrongPlace = 1;
+							break;
+						}
+						else {
+							pair<int, int> pairXY = make_pair(x, y + i);
+							ship_temp->coordinatesShip[pairXY] = *ship_temp;
+							ship_temp->coord.coorXY.push_back(pairXY);
 						}
 					}
 				}
+				if (wrongPlace) {
+					ship_temp->horizontal = !ship_temp->horizontal;
+					ship_temp->coordinatesShip.clear();
+					ship_temp->coord.coorXY.clear();
+				}
+			} while (wrongPlace);
+
+			fromVectorToMap(ship_temp, currentMap);
+		}
+		void fromVectorToMap(Ship* ship_temp, vector<vector<Cell>>& currentMap) {
+			for (int i = 0; i < ship_temp->numDeck; i++) {
+				currentMap[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].isShip = 1;
+			}
 		}
 	};
 
@@ -123,8 +159,6 @@
 	public:
 		defoltShip() : Ship() {}
 		defoltShip(int numDeck, bool horizontal) : Ship(numDeck, "defaultShip", horizontal) {}
-
-
 		
 	};
 
@@ -132,36 +166,13 @@
 	public:
 		fuelShip(int numDeck, bool horizontal) : Ship(numDeck, "fuelShip", horizontal) {}
 		
-		void destroyShip(vector<vector<Cell>>& currentMap, int x,int y, int height, int length) override{
-				for (int dx = -2; dx <= 2; dx++) {
-					cout << "prikol1";
-					for (int dy = -2; dy <=2; dy++) {
-						cout << "prikol2";
-						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
-							currentMap[x + dx][y + dy].isMiss = 1;
-						}
-					}
-				}
-		}
 	};
 
 	class zalpShip : public Ship {
 	public:
 		zalpShip(int numDeck, bool horizontal) : Ship(numDeck, "zalpShip", horizontal) {}
 		
-		void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length) {
-			for (const auto& coord : tempShip->coordinatesShip) {
-				int x = coord.first.first;
-				int y = coord.first.second;
-				for (int dx = -1; dx <= 1; dx++) {
-					for (int dy = -1; dy <= 1; dy++) {
-						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
-							currentMap[x + dx][y + dy].isMiss = 1;
-						}
-					}
-				}
-			}
-		}
+	
 	};
 
 	class Print {
@@ -246,27 +257,34 @@
 		int countReadyShip;
 
 		void createFleet(vector<vector<Cell>>& currentMap,  int random, int height, int length){
-			int max_length_ship = 3;// 4
+			int max_length_ship = 4;// 4
 			int max = (height * length * 0.2);
 			int max_unique = (max*0.2)/4;
-			int fuel = 1; // зробити функцію запросу для користувача
+			int fuel = 0; // зробити функцію запросу для користувача
 			int zalp = 0; // зробити функцію запросу для користувача + перевірка
-			Ship temp_ship;
+			
 			usualFunc check;
 			int temp_size_ship = 1;
 			if (random) {
 				int currnt = 0;
 				while(currnt < max) {
 					if (fuel) {
-						temp_ship = fuelShip(4, rand() % 2);
+						/*temp_ship = fuelShip(4, rand() % 2);*/
+						fuelShip temp_ship(4, rand() % 2);
+						temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
 						currnt += 4;
 						fuel--;
-
+						allShips.push_back(temp_ship);
+						countReadyShip++;
 					}
 					else if (zalp) {
-						temp_ship = zalpShip(4, rand() % 2);
+						/*temp_ship = zalpShip(4, rand() % 2);*/
+						zalpShip temp_ship(4, rand() % 2);
+						temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
 						currnt += 4;
 						zalp--;
+						allShips.push_back(temp_ship);
+						countReadyShip++;
 					}
 					else {
 						temp_size_ship = 1 + rand() % max_length_ship;
@@ -275,51 +293,12 @@
 								temp_size_ship--;
 							}
 						} while ((temp_size_ship + currnt) > max);
-						temp_ship = defoltShip(temp_size_ship, rand() % 2);
+						defoltShip temp_ship(temp_size_ship, rand() % 2);
+						temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
 						currnt += temp_size_ship;
+						allShips.push_back(temp_ship);
+						countReadyShip++;
 					}
-
-					bool wrongPlace;
-					do {
-						wrongPlace = 0;
-						int x = rand() % height;
-						int y = rand() % length;
-						for (int i = 0; i < temp_ship.numDeck; i++) {
-							if (temp_ship.horizontal) {
-								if (!check.isCellForShip(currentMap, x + i, y, height, length)) {
-									wrongPlace = 1;
-									break;
-								}
-								else {
-									pair<int, int> pairXY = make_pair(x + i, y);
-									temp_ship.coordinatesShip[pairXY] = temp_ship;
-									temp_ship.coord.coorXY.push_back(pairXY);
-								}
-
-							}
-							else if (!temp_ship.horizontal) {
-								if (!check.isCellForShip(currentMap, x, y + i, height, length)) {
-									wrongPlace = 1;
-									break;
-								}
-								else {
-									pair<int, int> pairXY = make_pair(x, y + i);
-									temp_ship.coordinatesShip[pairXY] = temp_ship;
-									temp_ship.coord.coorXY.push_back(pairXY);
-								}
-							}
-						}
-						if (wrongPlace) {
-							temp_ship.horizontal = !temp_ship.horizontal;
-							temp_ship.coordinatesShip.clear();
-							temp_ship.coord.coorXY.clear();
-						}
-					} while (wrongPlace);
-					for (int i = 0; i < temp_ship.numDeck; i++) {
-						currentMap[temp_ship.coord.coorXY[i].first][temp_ship.coord.coorXY[i].second].isShip = 1;
-					}
-					allShips.push_back(temp_ship);
-					countReadyShip++;
 				}
 			}
 			if (!random) {
@@ -334,8 +313,6 @@
 	class Game {
 	public:
 		Game() : height(10), length(10), gameEnded(false), playerTurn(true) {}
-
-		
 
 		vector<vector<Cell>> createMap() {
 			return vector<vector<Cell>>(height, vector<Cell>(length));
@@ -446,17 +423,27 @@
 				tempShip->countHit -= 1;
 
 				if (tempShip->countHit == 0) {
-					for (const auto& coord : tempShip->coordinatesShip) {
-						int a = coord.first.first;
-						int b = coord.first.second;
-						tempShip->destroyShip(currentMap, a,b, height, length);
-					}
+					destroyShip(currentMap, tempShip);
 
 					if (check.areMatricesEqual(currentMap, map)) {
 						myShips.countReadyShip--;
 					}
 					else {
 						enemyShips.countReadyShip--;
+					}
+				}
+			}
+		}
+
+		void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip) {
+			for (const auto& coord : tempShip->coordinatesShip) {
+				int x = coord.first.first;
+				int y = coord.first.second;
+				for (int dx = -1; dx <= 1; dx++) {
+					for (int dy = -1; dy <= 1; dy++) {
+						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
+							currentMap[x + dx][y + dy].isMiss = 1;
+						}
 					}
 				}
 			}
