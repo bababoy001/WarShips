@@ -106,93 +106,25 @@
 
 		usualFunc check;
 		
-		virtual void randomPlaceShip(Ship* ship_temp, vector<vector<Cell>>& currentMap, int height, int length) {
-			bool wrongPlace;
-			do {
-				wrongPlace = 0;
-				int x = rand() % height;
-				int y = rand() % length;
-				for (int i = 0; i < ship_temp->numDeck; i++) {
-					if (ship_temp->horizontal) {
-						if (!check.isCellForShip(currentMap, x + i, y, height, length)) {
-							wrongPlace = 1;
-							break;
-						}
-						else {
-							pair<int, int> pairXY = make_pair(x + i, y);
-							ship_temp->coordinatesShip[pairXY] = *ship_temp;
-							ship_temp->coord.coorXY.push_back(pairXY);
-						}
 
-					}
-					else if (!ship_temp->horizontal) {
-						if (!check.isCellForShip(currentMap, x, y + i, height, length)) {
-							wrongPlace = 1;
-							break;
-						}
-						else {
-							pair<int, int> pairXY = make_pair(x, y + i);
-							ship_temp->coordinatesShip[pairXY] = *ship_temp;
-							ship_temp->coord.coorXY.push_back(pairXY);
-						}
-					}
-				}
-				if (wrongPlace) {
-					ship_temp->horizontal = !ship_temp->horizontal;
-					ship_temp->coordinatesShip.clear();
-					ship_temp->coord.coorXY.clear();
-				}
-			} while (wrongPlace);
-
-			fromVectorToMap(ship_temp, currentMap);
-		}
-		void fromVectorToMap(Ship* ship_temp, vector<vector<Cell>>& currentMap) {
-			for (int i = 0; i < ship_temp->numDeck; i++) {
-				currentMap[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].isShip = 1;
-			}
-		}
 	};
 
 	
 
 	class defoltShip : public Ship {
 	public:
-		defoltShip(int numDeck, bool horizontal) {
-			this->numDeck = numDeck;
-			this->horizontal = horizontal;
-			this->countHit = numDeck;
-		}
-		int numDeck;
-		bool horizontal;
-		int countHit;
-		string name;
-		
+		defoltShip() : Ship() {}
+		defoltShip(int numDeck, bool horizontal) : Ship(numDeck, "defaultShip", horizontal) {}
 	};
 
 	class fuelShip : public Ship {
 	public:
-		fuelShip(int numDeck, bool horizontal) {
-			this->numDeck = numDeck;
-			this->horizontal = horizontal;
-			this->countHit = numDeck;
-		}
-		int numDeck;
-		bool horizontal;
-		int countHit;
-		string name;
+		fuelShip(int numDeck, bool horizontal) : Ship(numDeck, "fuelShip", horizontal) {}
 	};
 
 	class zalpShip : public Ship {
 	public:
-		zalpShip(int numDeck, bool horizontal) {
-			this->numDeck = numDeck;
-			this->horizontal = horizontal;
-			this->countHit = numDeck;
-		}
-		int numDeck;
-		bool horizontal;
-		int countHit;
-		string name;
+		zalpShip(int numDeck, bool horizontal) : Ship(numDeck, "zalpShip", horizontal) {}
 	};
 
 	class Print {
@@ -282,42 +214,74 @@
 			int max_unique = (max*0.2)/4;
 			int fuel = 0; // зробити функцію запросу для користувача
 			int zalp = 0; // зробити функцію запросу для користувача + перевірка
-
+			Ship temp_ship;
+			usualFunc check;
 			int temp_size_ship = 1;
 			if (random) {
 				int currnt = 0;
 				while(currnt < max) {
 					if (fuel) {
-						//Ship* temp_ship = new fuelShip(4, rand() % 2);
-						fuelShip temp_ship(4, rand() % 2);
-						temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
-						allShips.push_back(temp_ship);
-						countReadyShip++;
+						temp_ship = fuelShip(4, rand() % 2);
 						currnt += 4;
 						fuel--;
-						continue;
 					}
-					if (zalp) {
-						zalpShip temp_ship(4, rand() % 2);
-						temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
-						allShips.push_back(temp_ship);
-						countReadyShip++;
+					else if (zalp) {
+						temp_ship = zalpShip(4, rand() % 2);
 						currnt += 4;
 						zalp--;
-						continue;
+					}
+					else {
+						temp_size_ship = 1 + rand() % max_length_ship;
+						do {
+							if ((temp_size_ship + currnt) > max) {
+								temp_size_ship--;
+							}
+						} while ((temp_size_ship + currnt) > max);
+						temp_ship = defoltShip(temp_size_ship, rand() % 2);
+						currnt += temp_size_ship;
 					}
 
-					temp_size_ship = 1 + rand() % max_length_ship;
-					do{
-						if ((temp_size_ship + currnt) > max) {
-							temp_size_ship--;
+					bool wrongPlace;
+					do {
+						wrongPlace = 0;
+						int x = rand() % height;
+						int y = rand() % length;
+						for (int i = 0; i < temp_ship.numDeck; i++) {
+							if (temp_ship.horizontal) {
+								if (!check.isCellForShip(currentMap, x + i, y, height, length)) {
+									wrongPlace = 1;
+									break;
+								}
+								else {
+									pair<int, int> pairXY = make_pair(x + i, y);
+									temp_ship.coordinatesShip[pairXY] = temp_ship;
+									temp_ship.coord.coorXY.push_back(pairXY);
+								}
+
+							}
+							else if (!temp_ship.horizontal) {
+								if (!check.isCellForShip(currentMap, x, y + i, height, length)) {
+									wrongPlace = 1;
+									break;
+								}
+								else {
+									pair<int, int> pairXY = make_pair(x, y + i);
+									temp_ship.coordinatesShip[pairXY] = temp_ship;
+									temp_ship.coord.coorXY.push_back(pairXY);
+								}
+							}
 						}
-					}while ((temp_size_ship + currnt) > max);
-					Ship temp_ship(temp_size_ship, rand() % 2);
-					temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
+						if (wrongPlace) {
+							temp_ship.horizontal = !temp_ship.horizontal;
+							temp_ship.coordinatesShip.clear();
+							temp_ship.coord.coorXY.clear();
+						}
+					} while (wrongPlace);
+					for (int i = 0; i < temp_ship.numDeck; i++) {
+						currentMap[temp_ship.coord.coorXY[i].first][temp_ship.coord.coorXY[i].second].isShip = 1;
+					}
 					allShips.push_back(temp_ship);
 					countReadyShip++;
-					currnt += temp_size_ship;
 				}
 			}
 			if (!random) {
