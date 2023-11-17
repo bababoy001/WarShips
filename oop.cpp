@@ -105,8 +105,16 @@
 		map<pair<int, int>, Ship> coordinatesArroundShip;
 
 		usualFunc check;
-		
 
+		virtual void destroyShip(vector<vector<Cell>>& currentMap, int x,int y, int height , int length) {
+				for (int dx = -1; dx <= 1; dx++) {
+					for (int dy = -1; dy <= 1; dy++) {
+						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
+							currentMap[x + dx][y + dy].isMiss = 1;
+						}
+					}
+				}
+		}
 	};
 
 	
@@ -115,16 +123,45 @@
 	public:
 		defoltShip() : Ship() {}
 		defoltShip(int numDeck, bool horizontal) : Ship(numDeck, "defaultShip", horizontal) {}
+
+
+		
 	};
 
 	class fuelShip : public Ship {
 	public:
 		fuelShip(int numDeck, bool horizontal) : Ship(numDeck, "fuelShip", horizontal) {}
+		
+		void destroyShip(vector<vector<Cell>>& currentMap, int x,int y, int height, int length) override{
+				for (int dx = -2; dx <= 2; dx++) {
+					cout << "prikol1";
+					for (int dy = -2; dy <=2; dy++) {
+						cout << "prikol2";
+						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
+							currentMap[x + dx][y + dy].isMiss = 1;
+						}
+					}
+				}
+		}
 	};
 
 	class zalpShip : public Ship {
 	public:
 		zalpShip(int numDeck, bool horizontal) : Ship(numDeck, "zalpShip", horizontal) {}
+		
+		void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length) {
+			for (const auto& coord : tempShip->coordinatesShip) {
+				int x = coord.first.first;
+				int y = coord.first.second;
+				for (int dx = -1; dx <= 1; dx++) {
+					for (int dy = -1; dy <= 1; dy++) {
+						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
+							currentMap[x + dx][y + dy].isMiss = 1;
+						}
+					}
+				}
+			}
+		}
 	};
 
 	class Print {
@@ -209,10 +246,10 @@
 		int countReadyShip;
 
 		void createFleet(vector<vector<Cell>>& currentMap,  int random, int height, int length){
-			int max_length_ship = 4;
+			int max_length_ship = 3;// 4
 			int max = (height * length * 0.2);
 			int max_unique = (max*0.2)/4;
-			int fuel = 0; // зробити функцію запросу для користувача
+			int fuel = 1; // зробити функцію запросу для користувача
 			int zalp = 0; // зробити функцію запросу для користувача + перевірка
 			Ship temp_ship;
 			usualFunc check;
@@ -224,6 +261,7 @@
 						temp_ship = fuelShip(4, rand() % 2);
 						currnt += 4;
 						fuel--;
+
 					}
 					else if (zalp) {
 						temp_ship = zalpShip(4, rand() % 2);
@@ -390,12 +428,11 @@
 			}
 
 		}
-
 		void isShipDestroyed(int x, int y, vector<vector<Cell>>& currentMap) {
 			pair<int, int> pairXY = make_pair(x, y);
 			Ship* tempShip = nullptr;
 
-			vector<Ship>& ships = (check.areMatricesEqual(currentMap,map)) ? myShips.allShips : enemyShips.allShips;
+			vector<Ship>& ships = (check.areMatricesEqual(currentMap, map)) ? myShips.allShips : enemyShips.allShips;
 
 			for (Ship& ship : ships) {
 				auto it = ship.coordinatesShip.find(pairXY);
@@ -409,9 +446,13 @@
 				tempShip->countHit -= 1;
 
 				if (tempShip->countHit == 0) {
-					destroyShip(currentMap, tempShip);
+					for (const auto& coord : tempShip->coordinatesShip) {
+						int a = coord.first.first;
+						int b = coord.first.second;
+						tempShip->destroyShip(currentMap, a,b, height, length);
+					}
 
-					if (check.areMatricesEqual(currentMap, map)) {	
+					if (check.areMatricesEqual(currentMap, map)) {
 						myShips.countReadyShip--;
 					}
 					else {
@@ -420,21 +461,6 @@
 				}
 			}
 		}
-
-		void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip) {
-			for (const auto& coord : tempShip->coordinatesShip) {
-				int x = coord.first.first;
-				int y = coord.first.second;
-				for (int dx = -1; dx <= 1; dx++) {
-					for (int dy = -1; dy <= 1; dy++) {
-						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
-							currentMap[x + dx][y + dy].isMiss = 1;
-						}
-					}
-				}
-			}
-		}
-
 	};
 
 	int main()
