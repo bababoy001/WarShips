@@ -5,8 +5,7 @@
 	#include <string>
 	#include <vector>
 	#include <map>
-#define height 10
-#define length 10
+
 	using namespace std;
 
 
@@ -41,19 +40,19 @@
 
 	class usualFunc {
 	public:
-		bool isCellInMap(int x, int y) {
+		bool isCellInMap(int x, int y, int height, int length) {
 			return(x >= 0) && (y >= 0) && (x < height) && (y < length);
 		}
 
-		bool isCellForShip(Cell(*map)[length], int x, int y) {
+		bool isCellForShip(Cell** currentMap, int x, int y, int height, int length) {
 
-			if (!isCellInMap(x, y) || map[x][y].isShip)
+			if (!isCellInMap(x, y, height, length) || currentMap[x][y].isShip)
 			{
 				return false;
 			}
 			for (int dx = -1; dx <= 1; dx++) {
 				for (int dy = -1; dy <= 1; dy++) {
-					if (isCellInMap(x + dx, y + dy) && map[x + dx][y + dy].isShip) {
+					if (isCellInMap(x + dx, y + dy, height, length) && currentMap[x + dx][y + dy].isShip) {
 						return false;
 					}
 				}
@@ -87,7 +86,7 @@
 
 		usualFunc check;
 		
-		virtual void randomPlaceShip(Ship* ship_temp, Cell(*map)[length]) {
+		virtual void randomPlaceShip(Ship* ship_temp, Cell** currentMap, int height, int length) {
 			bool wrongPlace;
 			do {
 				wrongPlace = 0;
@@ -95,7 +94,7 @@
 				int y = rand() % length;
 				for (int i = 0; i < ship_temp->numDeck; i++) {
 					if (ship_temp->horizontal) {
-						if (!check.isCellForShip(map, x + i, y)) {
+						if (!check.isCellForShip(currentMap, x + i, y, height, length)) {
 							wrongPlace = 1;
 							break;
 						}
@@ -107,7 +106,7 @@
 
 					}
 					else if (!ship_temp->horizontal) {
-						if (!check.isCellForShip(map, x, y + i)) {
+						if (!check.isCellForShip(currentMap, x, y + i, height, length)) {
 							wrongPlace = 1;
 							break;
 						}
@@ -125,11 +124,11 @@
 				}
 			} while (wrongPlace);
 
-			fromVectorToMap(ship_temp, map);
+			fromVectorToMap(ship_temp, currentMap);
 		}
-		void fromVectorToMap(Ship* ship_temp, Cell(*map)[length]) {
+		void fromVectorToMap(Ship* ship_temp, Cell** currentMap) {
 			for (int i = 0; i < ship_temp->numDeck; i++) {
-				map[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].isShip = 1;
+				currentMap[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].isShip = 1;
 			}
 		}
 	};
@@ -178,52 +177,71 @@
 
 	class Print {
 	public:
-		/*void sizeMap(int &height, int &length) {
-			cout << "Enter height map";
+		void sizeMap(int &height, int &length) {
+			cout << "Enter height map: ";
 			cin >> height;
-			cout << "Enter length map";
+			cout << "Enter length map: ";
 			cin >> length;
-		}*/
-		void printMap(Cell(*map)[length]) {
+		}
+		void printMap(Cell** currentMap, int height, int length) {
 			cout << "   ";
-			for (int j = 1; j <= length; j++) {
-				cout << " " << j;
+			for (int j = 0; j < length; j++) {
+				char letter = 'a' + j;
+				cout << " " << letter;
 			}
-
-			cout << endl << "   _____________________" << endl;
-			cout << "  |                     |" << endl;
+			cout << endl << "   ";
+			for (int j = 0; j <= length*2; j++) {
+				cout << "_";
+			}
+			cout << endl;
+			
 
 			for (int i = 0; i < height; i++) {
-				char letter = 'a' + i;
-
-				cout << letter << " | ";
-
+				if (i < 9) {
+					cout << i + 1 << " | ";
+				}
+				else {
+					cout << i + 1 << "| ";
+				}
 				for (int j = 0; j < length; j++) {
-					if (map[i][j].isShip) {
-						if (map[i][j].isHit) {
+					if (currentMap[i][j].isShip) {
+						if (currentMap[i][j].isHit) {
 							cout << "X ";
 							continue;
 						}
 						cout << "O ";
 					}
-					else if (map[i][j].isMiss) {
+					else if (currentMap[i][j].isMiss) {
 						cout << "* ";
 					}
 					else {
 						cout << "  ";
 					}
 				}
-
 				cout << "|" << endl;
 			}
-			cout << "  |_____________________|";
+			cout<< "  |";
+			for (int j = 0; j <= length * 2; j++) {
+				cout << "_";
+			}
+			cout << "|" << endl;
 		}
+
 		void printSentence(string sentence) {
 			cout << endl << sentence << endl;
 		}
 
-		void cinCoord(char &letter, int &number) {
-			cin >> letter >> number;
+		void cinCoord(int& number, char &letter ) {
+			cin >> number >> letter;
+		}
+
+		void printAllMaps(Cell** map, Cell** enemyMap, int height, int length) {
+			system("cls");
+			printSentence("Your Map:");
+			printMap(map, height, length);
+
+			printSentence("Enemy's Map:");
+			printMap(enemyMap, height, length);
 		}
 
 	private:
@@ -238,7 +256,7 @@
 		vector <Ship> allShips;
 		int countReadyShip;
 
-		void createFleet(Cell(*map)[length],  int random){
+		void createFleet(Cell** currentMap,  int random, int height, int length){
 			int max_length_ship = 4;
 			int max = (height * length * 0.2);
 			int max_unique = (max*0.2)/4;
@@ -252,7 +270,7 @@
 					if (fuel) {
 						//Ship* temp_ship = new fuelShip(4, rand() % 2);
 						fuelShip temp_ship(4, rand() % 2);
-						temp_ship.randomPlaceShip(&temp_ship, map);
+						temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
 						allShips.push_back(temp_ship);
 						countReadyShip++;
 						currnt += 4;
@@ -261,7 +279,7 @@
 					}
 					if (zalp) {
 						zalpShip temp_ship(4, rand() % 2);
-						temp_ship.randomPlaceShip(&temp_ship, map);
+						temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
 						allShips.push_back(temp_ship);
 						countReadyShip++;
 						currnt += 4;
@@ -275,9 +293,8 @@
 							temp_size_ship--;
 						}
 					}while ((temp_size_ship + currnt) > max);
-					cout <<endl<< temp_size_ship;
 					Ship temp_ship(temp_size_ship, rand() % 2);
-					temp_ship.randomPlaceShip(&temp_ship, map);
+					temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
 					allShips.push_back(temp_ship);
 					countReadyShip++;
 					currnt += temp_size_ship;
@@ -294,42 +311,45 @@
 
 	class Game {
 	public:
-		Game(){
-			myShips.createFleet(map, 1);
-			enemyShips.createFleet(enemyMap, 1);
-			gameEnded = 0;
-			playerTurn = 1;
+		Game() {
+			height = 10;
+			length = 10;
+			
+			gameEnded = false;
+			playerTurn = true;
 		}
-		Cell map[height][length];
-		Cell enemyMap[height][length];
-		Ships myShips;
-		Ships enemyShips;
-		usualFunc check;
-		bool gameEnded;
-		bool playerTurn;
-		
 
-		Print printAll;
+		~Game() {
+			for (int i = 0; i < height; ++i) {
+				delete[] map[i];
+				delete[] enemyMap[i];
+			}
+			delete[] map;
+			delete[] enemyMap;
+		}
+
+		Cell** createMap() {
+			Cell** newMap = new Cell * [height];
+			for (int i = 0; i < height; ++i) {
+				newMap[i] = new Cell[length];
+			}
+			return newMap;
+		}
 		
 		void enterSizeMap(){
-			/*printAll.sizeMap(height, length);*/
-			/*map.resize(height, vector<Cell>(length));
-			enemyMap.resize(height, vector<Cell>(length));*/
-			
+			printAll.sizeMap(height, length);
 		}
 
 		void startGame(){
 			enterSizeMap();
+			map = createMap();
+			enemyMap = createMap();
+			myShips.createFleet(map, 1, height, length);
+			enemyShips.createFleet(enemyMap, 1, height, length);
 			while (!gameEnded) {
 
 				if (playerTurn) {
-					/*system("cls");*/
-
-					printAll.printSentence("Your Map:");
-					printAll.printMap(map);
-
-					printAll.printSentence("Enemy's Map:");
-					printAll.printMap(enemyMap);
+					printAll.printAllMaps(map, enemyMap, height, length);
 
 					attack(enemyMap);
 				}
@@ -338,33 +358,46 @@
 				}
 
 				if (enemyShips.countReadyShip == 0) {
+					printAll.printAllMaps(map, enemyMap, height, length);
 					printAll.printSentence("Congratulations! You've destroyed all enemy ships. You win!");
 					gameEnded = 1;
 				}
 
 
 				if (myShips.countReadyShip == 0) {
+					printAll.printAllMaps(map, enemyMap, height, length);
 					printAll.printSentence("Game over! All your ships have been destroyed. You lose.");
 					gameEnded = 1;
 				}
 			}
 		}
 	private:
-		void attack(Cell(*currentMap)[length]) {
+		Cell** map;
+		Cell** enemyMap;
+		Ships myShips;
+		Ships enemyShips;
+		usualFunc check;
+		bool gameEnded;
+		bool playerTurn;
+		Print printAll;
+		int height;
+		int length;
+
+		void attack(Cell** currentMap) {
 			int x;
 			int y;
 
 			if (playerTurn) {
-				printAll.printSentence("Enter coordinates: ");
+				printAll.printSentence("Enter coordinates (number letter): ");
 				char letter;
 				int number;
-				printAll.cinCoord(letter, number);
+				printAll.cinCoord(number, letter);
 				
 
-				x = letter - 'a';
-				y = number - 1;
+				x = number - 1;
+				y = letter - 'a';
 
-				if (!check.isCellInMap(x, y)) {
+				if (!check.isCellInMap(x, y, height, length)) {
 					printAll.printSentence("Wrong coordinates");
 					attack(currentMap);
 				}
@@ -389,7 +422,7 @@
 
 		}
 
-		void isShipDestroyed(int x, int y, Cell(*currentMap)[length]) {
+		void isShipDestroyed(int x, int y, Cell** currentMap) {
 			pair<int, int> pairXY = make_pair(x, y);
 			Ship* tempShip = nullptr;
 
@@ -419,7 +452,7 @@
 			}
 		}
 
-		void destroyShip(Cell(*currentMap)[length], Ship* tempShip) {
+		void destroyShip(Cell** currentMap, Ship* tempShip) {
 			int x;
 			int y;
 			for (int i = 0; i < tempShip->numDeck; i++) {
@@ -427,7 +460,7 @@
 				y = tempShip->coord.coorXY[i].second;
 				for (int dx = -1; dx <= 1; dx++) {
 					for (int dy = -1; dy <= 1; dy++) {
-						if (check.isCellInMap(x + dx, y + dy) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
+						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
 							currentMap[x + dx][y + dy].isMiss = 1;
 						}
 					}
@@ -440,13 +473,9 @@
 	int main()
 	{
 		srand(time(NULL));
-		
-		
 		Game game;
-		
 		
 		game.startGame();
 	
 		return 0;
-
 	}
