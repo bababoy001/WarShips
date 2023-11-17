@@ -10,7 +10,6 @@
 	using namespace std;
 
 
-
 	class Cell{
 	public:
 		Cell() {
@@ -23,11 +22,6 @@
 		bool isMiss;
 		bool isHit;
 		bool isAlive;
-	};
-
-	class Map {
-	public:
-		
 	};
 
 	class Coordinates {
@@ -61,7 +55,7 @@
 			return true;
 		}
 
-		bool areMatricesEqual(const vector<vector<Cell>>& matrix1, const vector<vector<Cell>>& matrix2) {
+		bool areMatricesEqual( const vector<vector<Cell>>& matrix1, const vector<vector<Cell>>& matrix2) {
 			if (matrix1.size() != matrix2.size() || matrix1.empty() || matrix1[0].size() != matrix2[0].size()) {
 				return false; // Розміри матриць не співпадають
 			}
@@ -79,11 +73,12 @@
 
 			return true; // Матриці ідентичні
 		}
+		
 	};
 	
 	class Ship {
 	public:
-		Ship() : numDeck(0), horizontal(false), countHit(numDeck){}
+		Ship() : numDeck(0), horizontal(false), countHit(numDeck) {}
 		Ship(int numDeck, string name, bool horizontal) {
 			this->numDeck = numDeck;
 			this->name = name;
@@ -102,7 +97,6 @@
 
 		Coordinates coord;
 		map<pair<int, int>, Ship> coordinatesShip;
-		map<pair<int, int>, Ship> coordinatesArroundShip;
 
 		usualFunc check;
 
@@ -143,36 +137,57 @@
 					ship_temp->coord.coorXY.clear();
 				}
 			} while (wrongPlace);
-
-			fromVectorToMap(ship_temp, currentMap);
-		}
-		void fromVectorToMap(Ship* ship_temp, vector<vector<Cell>>& currentMap) {
 			for (int i = 0; i < ship_temp->numDeck; i++) {
 				currentMap[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].isShip = 1;
 			}
 		}
+
+		virtual void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length){
+			for (const auto& coord : tempShip->coordinatesShip) {
+				int x = coord.first.first;
+				int y = coord.first.second;
+				for (int dx = -1; dx <= 1; dx++) {
+					for (int dy = -1; dy <= 1; dy++) {
+						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
+							currentMap[x + dx][y + dy].isMiss = 1;
+						}
+					}
+				}
+			}
+		}
 	};
-
 	
-
 	class defoltShip : public Ship {
 	public:
 		defoltShip() : Ship() {}
 		defoltShip(int numDeck, bool horizontal) : Ship(numDeck, "defaultShip", horizontal) {}
-		
 	};
 
 	class fuelShip : public Ship {
 	public:
 		fuelShip(int numDeck, bool horizontal) : Ship(numDeck, "fuelShip", horizontal) {}
-		
+		void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length) override {
+			for (const auto& coord : tempShip->coordinatesShip) {
+				int x = coord.first.first;
+				int y = coord.first.second;
+				for (int dx = -2; dx <= 2; dx++) {
+					for (int dy = -2; dy <= 2; dy++) {
+						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
+							currentMap[x + dx][y + dy].isMiss = 1;
+							if (currentMap[x + dx][y + dy].isShip) {
+								currentMap[x + dx][y + dy].isHit = 1;
+								// перевірка на знищення корабля 
+							}
+						}
+					}
+				}
+			}
+		}
 	};
 
 	class zalpShip : public Ship {
 	public:
 		zalpShip(int numDeck, bool horizontal) : Ship(numDeck, "zalpShip", horizontal) {}
-		
-	
 	};
 
 	class Print {
@@ -253,14 +268,14 @@
 		Ships() {
 			countReadyShip = 0;
 		}
-		vector <Ship> allShips;
+		vector <Ship*> allShips;
 		int countReadyShip;
 
 		void createFleet(vector<vector<Cell>>& currentMap,  int random, int height, int length){
 			int max_length_ship = 4;// 4
 			int max = (height * length * 0.2);
 			int max_unique = (max*0.2)/4;
-			int fuel = 0; // зробити функцію запросу для користувача
+			int fuel = 1; // зробити функцію запросу для користувача
 			int zalp = 0; // зробити функцію запросу для користувача + перевірка
 			
 			usualFunc check;
@@ -270,8 +285,8 @@
 				while(currnt < max) {
 					if (fuel) {
 						/*temp_ship = fuelShip(4, rand() % 2);*/
-						fuelShip temp_ship(4, rand() % 2);
-						temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
+						Ship* temp_ship = new fuelShip(4, rand() % 2);
+						temp_ship->randomPlaceShip(temp_ship, currentMap, height, length);
 						currnt += 4;
 						fuel--;
 						allShips.push_back(temp_ship);
@@ -279,8 +294,8 @@
 					}
 					else if (zalp) {
 						/*temp_ship = zalpShip(4, rand() % 2);*/
-						zalpShip temp_ship(4, rand() % 2);
-						temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
+						Ship* temp_ship = new zalpShip(4, rand() % 2);
+						temp_ship->randomPlaceShip(temp_ship, currentMap, height, length);
 						currnt += 4;
 						zalp--;
 						allShips.push_back(temp_ship);
@@ -293,8 +308,8 @@
 								temp_size_ship--;
 							}
 						} while ((temp_size_ship + currnt) > max);
-						defoltShip temp_ship(temp_size_ship, rand() % 2);
-						temp_ship.randomPlaceShip(&temp_ship, currentMap, height, length);
+						Ship* temp_ship = new defoltShip(temp_size_ship, rand() % 2);
+						temp_ship->randomPlaceShip(temp_ship, currentMap, height, length);
 						currnt += temp_size_ship;
 						allShips.push_back(temp_ship);
 						countReadyShip++;
@@ -309,8 +324,108 @@
 	private:
 		
 	};
+	
+	class Bot {
+	public:
+		Bot(int level) {
+		}
+		virtual void attack(vector<vector<Cell>>& currentMap) = 0;
 
-	class Game {
+	};
+
+	class BotLvl1 {
+	public:
+		
+		void attack(bool playerTurn, vector<vector<Cell>>& currentMap, int height, int length, Ships& enemyShips, Ships& myShips) {
+			int x;
+			int y;
+
+			if (playerTurn) {
+				printAll.printSentence("Enter coordinates (number letter): ");
+				char letter;
+				int number;
+				printAll.cinCoord(number, letter);
+
+				x = number - 1;
+				y = letter - 'a';
+
+				if (!check.isCellInMap(x, y, height, length)) {
+					printAll.printSentence("Wrong coordinates");
+					return attack(playerTurn, currentMap, height, length, enemyShips, myShips);
+				}
+			}
+			else if (!playerTurn) {
+				x = rand() % height;
+				y = rand() % length;
+
+			}
+			if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
+				printAll.printSentence("This cell already hitted");
+				return attack(playerTurn, currentMap, height, length, enemyShips, myShips);
+			}
+			if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
+				currentMap[x][y].isMiss = 1;
+				playerTurn = !playerTurn;
+			}
+			if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
+				currentMap[x][y].isHit = 1;
+				Ship* tempShip = fromCoorToShip(playerTurn, x, y, currentMap, enemyShips, myShips);
+				if (isShipDestroyed(tempShip)) {
+					tempShip->destroyShip(currentMap, tempShip, height, length);
+					if (!playerTurn) {
+						myShips.countReadyShip--;
+					}
+					else {
+						enemyShips.countReadyShip--;
+					}
+				}
+			}
+
+		}
+		Ship* fromCoorToShip(bool playerTurn, int x, int y, vector<vector<Cell>>& currentMap, Ships& enemyShips, Ships& myShips) {
+			pair<int, int> pairXY = make_pair(x, y);
+			Ship* tempShip = nullptr;
+
+			vector<Ship*> ships = (playerTurn) ? enemyShips.allShips : myShips.allShips;
+
+			for (Ship* ship : ships) {
+				auto it = ship->coordinatesShip.find(pairXY);
+				if (it != ship->coordinatesShip.end()) {
+					tempShip = ship;
+					break;
+				}
+			}
+			return tempShip;
+		}
+		bool isShipDestroyed(Ship* tempShip) {
+			if (tempShip) {
+				tempShip->countHit -= 1;
+				if (tempShip->countHit == 0) {
+					return true;
+				}
+			}
+			return false;
+		}
+	private:
+		usualFunc check;
+		Print printAll;
+	};
+
+	class BotLvl2 : public Bot {
+	public:
+		
+
+
+	};
+
+	class BotLvl3 : public Bot {
+	public:
+		
+
+
+	};
+
+	class Game{
 	public:
 		Game() : height(10), length(10), gameEnded(false), playerTurn(true) {}
 
@@ -332,10 +447,10 @@
 			while (!gameEnded) {
 				if (playerTurn) {
 					printAll.printAllMaps(map, enemyMap, height, length);
-					attack(enemyMap);
+					botEasy.attack(playerTurn,enemyMap, height, length, enemyShips, myShips);
 				}
 				else {
-					attack(map);
+					botEasy.attack(playerTurn, map, height, length, enemyShips, myShips);
 				}
 
 				if (enemyShips.countReadyShip == 0) {
@@ -363,91 +478,8 @@
 		Print printAll;
 		int height;
 		int length;
+		BotLvl1 botEasy;
 
-
-		void attack(vector<vector<Cell>>& currentMap) {
-			int x;
-			int y;
-
-			if (playerTurn) {
-				printAll.printSentence("Enter coordinates (number letter): ");
-				char letter;
-				int number;
-				printAll.cinCoord(number, letter);
-				
-
-				x = number - 1;
-				y = letter - 'a';
-
-				if (!check.isCellInMap(x, y, height, length)) {
-					printAll.printSentence("Wrong coordinates");
-					attack(currentMap);
-					return;
-				}
-			}
-			else if (!playerTurn) {
-				x = rand() % height;
-				y = rand() % length;
-			
-			}
-			if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
-				printAll.printSentence("This cell already hitted");
-				attack(currentMap);
-				return;
-			}
-			if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
-				currentMap[x][y].isMiss = 1;
-				playerTurn = !playerTurn;
-			}
-			if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
-				currentMap[x][y].isHit = 1;
-				isShipDestroyed(x, y, currentMap);
-			}
-
-		}
-		void isShipDestroyed(int x, int y, vector<vector<Cell>>& currentMap) {
-			pair<int, int> pairXY = make_pair(x, y);
-			Ship* tempShip = nullptr;
-
-			vector<Ship>& ships = (check.areMatricesEqual(currentMap, map)) ? myShips.allShips : enemyShips.allShips;
-
-			for (Ship& ship : ships) {
-				auto it = ship.coordinatesShip.find(pairXY);
-				if (it != ship.coordinatesShip.end()) {
-					tempShip = &ship;
-					break;
-				}
-			}
-
-			if (tempShip) {
-				tempShip->countHit -= 1;
-
-				if (tempShip->countHit == 0) {
-					destroyShip(currentMap, tempShip);
-
-					if (check.areMatricesEqual(currentMap, map)) {
-						myShips.countReadyShip--;
-					}
-					else {
-						enemyShips.countReadyShip--;
-					}
-				}
-			}
-		}
-
-		void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip) {
-			for (const auto& coord : tempShip->coordinatesShip) {
-				int x = coord.first.first;
-				int y = coord.first.second;
-				for (int dx = -1; dx <= 1; dx++) {
-					for (int dy = -1; dy <= 1; dy++) {
-						if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
-							currentMap[x + dx][y + dy].isMiss = 1;
-						}
-					}
-				}
-			}
-		}
 	};
 
 	int main()
