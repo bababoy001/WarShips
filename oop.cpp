@@ -17,11 +17,13 @@
 			isMiss = 0;
 			isHit = 0;
 			isAlive = 0;
+			symbol = ' ';
 		}
 		bool isShip;
 		bool isMiss;
 		bool isHit;
 		bool isAlive;
+		char symbol;
 	};
 
 	class Coordinates {
@@ -137,7 +139,11 @@
 					ship_temp->coord.coorXY.clear();
 				}
 			} while (wrongPlace);
+			fromVectorToMap(ship_temp, currentMap);
+		}
+		virtual void fromVectorToMap(Ship* ship_temp, vector<vector<Cell>>& currentMap) {
 			for (int i = 0; i < ship_temp->numDeck; i++) {
+				currentMap[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].symbol = 'O';
 				currentMap[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].isShip = 1;
 			}
 		}
@@ -166,6 +172,14 @@
 	class fuelShip : public Ship {
 	public:
 		fuelShip(int numDeck, bool horizontal) : Ship(numDeck, "fuelShip", horizontal) {}
+		
+		void fromVectorToMap(Ship* ship_temp, vector<vector<Cell>>& currentMap) override{
+			for (int i = 0; i < ship_temp->numDeck; i++) {
+				currentMap[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].symbol = 'F';
+				currentMap[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].isShip = 1;
+			}
+		}
+
 		void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length) override {
 			for (const auto& coord : tempShip->coordinatesShip) {
 				int x = coord.first.first;
@@ -224,7 +238,7 @@
 							cout << "X ";
 							continue;
 						}
-						cout << "O ";
+						cout<< currentMap[i][j].symbol << " ";
 					}
 					else if (currentMap[i][j].isMiss) {
 						cout << "* ";
