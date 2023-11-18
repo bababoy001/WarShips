@@ -285,6 +285,11 @@ public:
 	Ships() {
 		countReadyShip = 0;
 	}
+	~Ships() {
+		for (auto ship : allShips) {
+			delete ship;
+		}
+	}
 	vector <Ship*> allShips;
 	int countReadyShip;
 
@@ -418,7 +423,9 @@ public:
 	pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) override {
 		int x, y;
 		if (currntPlayerShips < lastPlayerShips) {
+			attempt = 0;
 			destroying = 0;
+			foundDirection = 0;
 		}
 		lastPlayerShips = currntPlayerShips;
 		botShoot(currentMap, height, length, x, y);
@@ -538,6 +545,10 @@ public:
 class Game {
 public:
 	Game() : height(10), length(10), lvlBot(0), gameEnded(false), playerTurn(true) {}
+
+	~Game() {
+		delete bot;
+	}
 
 	vector<vector<Cell>> createMap() {
 		return vector<vector<Cell>>(height, vector<Cell>(length));
