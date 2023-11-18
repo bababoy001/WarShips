@@ -367,7 +367,7 @@ private:
 
 class Bot {
 public:
-	virtual pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length) {
+	virtual pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) {
 		int x;
 		int y;
 
@@ -375,7 +375,7 @@ public:
 
 		if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
 			printAll.printSentence("This cell already hitted");
-			return attack(playerTurn, currentMap, height, length);
+			return attack(playerTurn, currentMap, height, length, currntPlayerShips);
 		}
 		if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
 			currentMap[x][y].isMiss = 1;
@@ -404,10 +404,7 @@ public:
 
 	BotLvl1() {}
 
-	void botShoot(int height, int length, int& x, int& y) override {
-		x = rand() % height;
-		y = rand() % length;
-	}
+
 
 private:
 	usualFunc check;
@@ -416,15 +413,19 @@ private:
 
 class BotLvl2 : public Bot {
 public:
-	BotLvl2() : lastHit(-1, -1), destroying(false), directionIndex(0), foundDirection(false) {}
+	BotLvl2() : firstHit(-1, -1), lastHit(-1, -1), destroying(false), directionIndex(0), foundDirection(false), attempt(0), lastPlayerShips(0){}
 
-	pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length) override {
+	pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) override {
 		int x, y;
+		if (currntPlayerShips < lastPlayerShips) {
+			destroying = 0;
+		}
+		lastPlayerShips = currntPlayerShips;
 		botShoot(currentMap, height, length, x, y);
 
 		if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
 			printAll.printSentence("This cell already hitted");
-			return attack(playerTurn, currentMap, height, length);
+			return attack(playerTurn, currentMap, height, length, currntPlayerShips);
 		}
 		if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
 			currentMap[x][y].isMiss = 1;
@@ -448,6 +449,10 @@ private:
 	bool destroying;
 	int directionIndex;
 	bool foundDirection;
+	int attempt;
+	int lastPlayerShips;
+	usualFunc check;
+	Print printAll;
 
 	void botShoot(vector<vector<Cell>>& currentMap, int height, int length, int& x, int& y) {
 		if (!destroying) {
@@ -459,7 +464,7 @@ private:
 		}
 	}
 
-	void findNextTarget(vector<vector<Cell>>& currentMap, int& x, int& y, int height, int length, int attempt = 0) {
+	void findNextTarget(vector<vector<Cell>>& currentMap, int& x, int& y, int height, int length) {
 		if (attempt >= 4) {
 			x = -1;
 			y = -1;
@@ -473,8 +478,16 @@ private:
 		int newY = lastHit.second + dy;
 
 		if (!check.isCellInMap(newX, newY, height, length)) {
-			directionIndex = (directionIndex + 1) % 4;
-			return findNextTarget(currentMap, x, y, height, length, attempt + 1);
+			if (foundDirection) {
+				lastHit = firstHit;
+				reverseDirection();
+			}
+			else {
+				directionIndex = (directionIndex + 1) % 4;
+				attempt++;
+			}
+			
+			return findNextTarget(currentMap, x, y, height, length);
 		}
 
 		if (check.isCellInMap(newX, newY, height, length) && !currentMap[newX][newY].isHit && !currentMap[newX][newY].isMiss && !currentMap[newX][newY].isShip) {
@@ -486,7 +499,10 @@ private:
 			}
 			else {
 				directionIndex = (directionIndex + 1) % 4;
-				findNextTarget(currentMap, x, y, height, length, attempt + 1);
+				attempt++;
+				x = newX;
+				y = newY;
+				return;
 			}
 		}
 		else if (!currentMap[newX][newY].isHit && currentMap[newX][newY].isShip) {
@@ -497,7 +513,8 @@ private:
 		}
 		else {
 			directionIndex = (directionIndex + 1) % 4;
-			findNextTarget(currentMap, x, y, height, length, attempt + 1);
+			attempt++;
+			findNextTarget(currentMap, x, y, height, length);
 		}
 	}
 
@@ -508,13 +525,12 @@ private:
 		else if (directionIndex == 3) directionIndex = 2;
 	}
 
-	usualFunc check;
-	Print printAll;
+	
 };
 
 class BotLvl3 : public Bot {
 public:
-
+	BotLvl3() {}
 
 
 };
@@ -563,12 +579,9 @@ public:
 				if (pairXY != pairForMiss) {
 					myShips.checkShipInHit(pairXY, enemyMap, height, length, enemyShips);
 				}
-				else {
-					playerTurn = !playerTurn;
-				}
 			}
 			else {
-				pair<int, int> pairXY = bot->attack(playerTurn, map, height, length);
+				pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip);
 				if (pairXY != pairForMiss) {
 					enemyShips.checkShipInHit(pairXY, map, height, length, myShips);
 				}
@@ -624,6 +637,7 @@ private:
 		}
 		if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
 			currentMap[x][y].isMiss = 1;
+			playerTurn = !playerTurn;
 			return make_pair(-1, -1);
 		}
 		if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
@@ -631,7 +645,6 @@ private:
 			return make_pair(x, y);
 		}
 	}
-
 };
 
 int main()
