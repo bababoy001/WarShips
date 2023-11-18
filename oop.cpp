@@ -96,11 +96,9 @@
 		bool horizontal;
 		int countHit;
 		string name;
-
+		usualFunc check;
 		Coordinates coord;
 		map<pair<int, int>, Ship> coordinatesShip;
-
-		usualFunc check;
 
 		virtual void randomPlaceShip(Ship* ship_temp, vector<vector<Cell>>& currentMap, int height, int length) {
 			bool wrongPlace;
@@ -148,7 +146,7 @@
 			}
 		}
 
-		virtual void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length){
+		virtual void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length, vector<pair<int, int>>& hits){
 			for (const auto& coord : tempShip->coordinatesShip) {
 				int x = coord.first.first;
 				int y = coord.first.second;
@@ -180,7 +178,7 @@
 			}
 		}
 
-		void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length) override {
+		void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length, vector<pair<int,int>>& hits) override {
 			for (const auto& coord : tempShip->coordinatesShip) {
 				int x = coord.first.first;
 				int y = coord.first.second;
@@ -190,7 +188,7 @@
 							currentMap[x + dx][y + dy].isMiss = 1;
 							if (currentMap[x + dx][y + dy].isShip) {
 								currentMap[x + dx][y + dy].isHit = 1;
-								// перевірка на знищення корабля 
+								hits.push_back(make_pair(x + dx, y + dy));
 							}
 						}
 					}
@@ -334,6 +332,29 @@
 				//PlaceShip(*ship_temp);
 			}
 		}
+		void checkShipInHit(pair<int, int>& pairXY, vector<vector<Cell>>& currentMap, int height, int length, Ships& currentShips) {
+			Ship* tempShip = nullptr;
+			vector<Ship*> ships = currentShips.allShips;
+
+			for (Ship* ship : ships) {
+				auto it = ship->coordinatesShip.find(pairXY);
+				if (it != ship->coordinatesShip.end()) {
+					tempShip = ship;
+					break;
+				}
+			}
+			if (tempShip) {
+				tempShip->countHit -= 1;
+				if (tempShip->countHit == 0) {
+					vector<pair<int, int>> hits;
+					tempShip->destroyShip(currentMap, tempShip, height, length, hits);
+					for (int i = 0; i < hits.size(); i++) {
+						checkShipInHit(hits[i], currentMap, height,  length, currentShips);
+					}
+					currentShips.countReadyShip--;
+				}
+			}
+		}
 	
 	private:
 		
@@ -350,7 +371,7 @@
 	class BotLvl1 {
 	public:
 		
-		void attack(bool playerTurn, vector<vector<Cell>>& currentMap, int height, int length, Ships& enemyShips, Ships& myShips) {
+		pair<int, int> attack(bool playerTurn, vector<vector<Cell>>& currentMap, int height, int length) {
 			int x;
 			int y;
 
@@ -365,7 +386,7 @@
 
 				if (!check.isCellInMap(x, y, height, length)) {
 					printAll.printSentence("Wrong coordinates");
-					return attack(playerTurn, currentMap, height, length, enemyShips, myShips);
+					return attack(playerTurn, currentMap, height, length);
 				}
 			}
 			else if (!playerTurn) {
@@ -375,51 +396,21 @@
 			}
 			if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
 				printAll.printSentence("This cell already hitted");
-				return attack(playerTurn, currentMap, height, length, enemyShips, myShips);
+				return attack(playerTurn, currentMap, height, length);
 			}
 			if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
 				currentMap[x][y].isMiss = 1;
 				playerTurn = !playerTurn;
+				return make_pair(-1, -1);
 			}
 			if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
 				currentMap[x][y].isHit = 1;
-				Ship* tempShip = fromCoorToShip(playerTurn, x, y, currentMap, enemyShips, myShips);
-				if (isShipDestroyed(tempShip)) {
-					tempShip->destroyShip(currentMap, tempShip, height, length);
-					if (!playerTurn) {
-						myShips.countReadyShip--;
-					}
-					else {
-						enemyShips.countReadyShip--;
-					}
-				}
+				return make_pair(x, y);
 			}
-
 		}
-		Ship* fromCoorToShip(bool playerTurn, int x, int y, vector<vector<Cell>>& currentMap, Ships& enemyShips, Ships& myShips) {
-			pair<int, int> pairXY = make_pair(x, y);
-			Ship* tempShip = nullptr;
 
-			vector<Ship*> ships = (playerTurn) ? enemyShips.allShips : myShips.allShips;
+		
 
-			for (Ship* ship : ships) {
-				auto it = ship->coordinatesShip.find(pairXY);
-				if (it != ship->coordinatesShip.end()) {
-					tempShip = ship;
-					break;
-				}
-			}
-			return tempShip;
-		}
-		bool isShipDestroyed(Ship* tempShip) {
-			if (tempShip) {
-				tempShip->countHit -= 1;
-				if (tempShip->countHit == 0) {
-					return true;
-				}
-			}
-			return false;
-		}
 	private:
 		usualFunc check;
 		Print printAll;
@@ -457,14 +448,22 @@
 			enemyMap = createMap();
 			myShips.createFleet(map, 1, height, length);
 			enemyShips.createFleet(enemyMap, 1, height, length);
-
+			pair<int, int> pairForMiss = make_pair(-1, -1);
 			while (!gameEnded) {
+				
 				if (playerTurn) {
 					printAll.printAllMaps(map, enemyMap, height, length);
-					botEasy.attack(playerTurn,enemyMap, height, length, enemyShips, myShips);
+					pair<int, int> pairXY = botEasy.attack(playerTurn,enemyMap, height, length);
+					if (pairXY != pairForMiss) {
+						myShips.checkShipInHit(pairXY, enemyMap, height, length, enemyShips);
+					}
+
 				}
 				else {
-					botEasy.attack(playerTurn, map, height, length, enemyShips, myShips);
+					pair<int, int> pairXY = botEasy.attack(playerTurn, map, height, length);
+					if (pairXY != pairForMiss) {
+						enemyShips.checkShipInHit(pairXY, map, height, length, myShips);
+					}
 				}
 
 				if (enemyShips.countReadyShip == 0) {
