@@ -127,7 +127,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bot.cpp" />
+    <ClCompile Include="BotLvl1.cpp" />
+    <ClCompile Include="BotLvl2.cpp" />
+    <ClCompile Include="BotLvl3.cpp" />
+    <ClCompile Include="Cell.cpp" />
+    <ClCompile Include="Coordinates.cpp" />
+    <ClCompile Include="defoltShip.cpp" />
+    <ClCompile Include="fuelShip.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="oop.cpp" />
+    <ClCompile Include="Print.cpp" />
+    <ClCompile Include="Ship.cpp" />
+    <ClCompile Include="Ships.cpp" />
+    <ClCompile Include="usualFunc.cpp" />
+    <ClCompile Include="zalpShip.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Bot.h" />
+    <ClInclude Include="BotLvl1.h" />
+    <ClInclude Include="BotLvl2.h" />
+    <ClInclude Include="BotLvl3.h" />
+    <ClInclude Include="Cell.h" />
+    <ClInclude Include="Coordinates.h" />
+    <ClInclude Include="defoltShip.h" />
+    <ClInclude Include="fuelShip.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="Print.h" />
+    <ClInclude Include="Ship.h" />
+    <ClInclude Include="Ships.h" />
+    <ClInclude Include="usualFunc.h" />
+    <ClInclude Include="zalpShip.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
