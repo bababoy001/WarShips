@@ -3,5 +3,6 @@
 
 
 # UML-діаграма класів
-![image](https://github.com/bababoy001/WarShips/assets/150041240/44ec13a8-654c-4659-9734-49169a5e60bb)
+![image](https://github.com/bababoy001/WarShips/assets/150041240/86575685-c7ed-47ff-935a-20755099b86e)
+
 
