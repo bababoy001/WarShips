@@ -88,7 +88,7 @@ void Print::createShip(int& temp_size_ship, bool& horizontal, int currnt, int ma
 	cout << "!(Available " << max_deck - currnt << " decks, maximum length of the ship " << max_length_ship << " )!";
 	cout << endl <<"Enter size of ship : ";
 	cin >> temp_size_ship;
-	if ((temp_size_ship + currnt) > max_deck) {
+	if (((temp_size_ship + currnt) > max_deck) || temp_size_ship > max_length_ship){
 		cout << endl << "Wrong size, try again.";
 		temp_size_ship = 1;
 		return createShip(temp_size_ship, horizontal, currnt, max_deck, max_length_ship);
