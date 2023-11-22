@@ -1,9 +1,9 @@
 #include "BotLvl2.h"
 #include <cstdlib>
-
+using namespace std;
 BotLvl2::BotLvl2() : firstHit(-1, -1), lastHit(-1, -1), destroying(false), directionIndex(0), foundDirection(false), attempt(0), lastPlayerShips(0) {}
 
-std::pair<int, int> BotLvl2::attack(bool& playerTurn, std::vector<std::vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) {
+pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) {
     int x, y;
     if (currntPlayerShips < lastPlayerShips) {
         attempt = 0;
@@ -20,20 +20,20 @@ std::pair<int, int> BotLvl2::attack(bool& playerTurn, std::vector<std::vector<Ce
     if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
         currentMap[x][y].isMiss = 1;
         playerTurn = !playerTurn;
-        return std::make_pair(-1, -1);
+        return make_pair(-1, -1);
     }
     if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
         currentMap[x][y].isHit = 1;
         if (!destroying) {
-            firstHit = std::make_pair(x, y);
-            lastHit = std::make_pair(x, y);
+            firstHit = make_pair(x, y);
+            lastHit = make_pair(x, y);
             destroying = 1;
         }
-        return std::make_pair(x, y);
+        return make_pair(x, y);
     }
 }
 
-void BotLvl2::botShoot(std::vector<std::vector<Cell>>& currentMap, int height, int length, int& x, int& y) {
+void BotLvl2::botShoot(vector<vector<Cell>>& currentMap, int height, int length, int& x, int& y) {
     if (!destroying) {
         x = rand() % height;
         y = rand() % length;
@@ -43,14 +43,14 @@ void BotLvl2::botShoot(std::vector<std::vector<Cell>>& currentMap, int height, i
     }
 }
 
-void BotLvl2::findNextTarget(std::vector<std::vector<Cell>>& currentMap, int& x, int& y, int height, int length) {
+void BotLvl2::findNextTarget(vector<vector<Cell>>& currentMap, int& x, int& y, int height, int length) {
     if (attempt >= 4) {
         x = -1;
         y = -1;
         return;
     }
 
-    std::vector<std::pair<int, int>> directions = { {1, 0}, {-1, 0}, {0, 1}, {0, -1} };
+    vector<pair<int, int>> directions = { {1, 0}, {-1, 0}, {0, 1}, {0, -1} };
     int dx = directions[directionIndex].first;
     int dy = directions[directionIndex].second;
     int newX = lastHit.first + dx;
@@ -86,7 +86,7 @@ void BotLvl2::findNextTarget(std::vector<std::vector<Cell>>& currentMap, int& x,
     else if (!currentMap[newX][newY].isHit && currentMap[newX][newY].isShip) {
         x = newX;
         y = newY;
-        lastHit = std::make_pair(x, y);
+        lastHit = make_pair(x, y);
         foundDirection = 1;
     }
     else {

@@ -9,6 +9,8 @@
 #include "BotLvl3.h"
 #include <utility>
 
+using namespace std;
+
 class Game {
 public:
     Game();
@@ -16,8 +18,8 @@ public:
     void startGame();
 
 private:
-    std::vector<std::vector<Cell>> map;
-    std::vector<std::vector<Cell>> enemyMap;
+    vector<vector<Cell>> map;
+    vector<vector<Cell>> enemyMap;
     Ships myShips;
     Ships enemyShips;
     usualFunc check;
@@ -29,7 +31,7 @@ private:
     int lvlBot;
     Bot* bot;
 
-    std::vector<std::vector<Cell>> createMap();
+    vector<vector<Cell>> createMap();
     void enterSettings();
-    std::pair<int, int> attackPlayer(std::vector<std::vector<Cell>>& currentMap, int height, int length);
+    pair<int, int> attackPlayer(vector<vector<Cell>>& currentMap, int height, int length);
 };

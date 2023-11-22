@@ -1,6 +1,6 @@
 #include "Ships.h"
 #include <cstdlib>
-
+using namespace std;
 Ships::Ships() : countReadyShip(0) {}
 
 Ships::~Ships() {
@@ -9,10 +9,10 @@ Ships::~Ships() {
     }
 }
 
-void Ships::createFleet(std::vector<std::vector<Cell>>& currentMap, int random, int height, int length) {
+void Ships::createFleet(vector<vector<Cell>>& currentMap, int random, int height, int length) {
 	int max_length_ship = 4;// 4
-	int max = (height * length * 0.2);
-	int max_unique = (max * 0.2) / 4;
+	int max_deck = (height * length * 0.2);
+	int max_unique = (max_deck * 0.2) / 4;
 	int fuel = max_unique; // зробити функцію запросу для користувача
 	int zalp = 0; // зробити функцію запросу для користувача + перевірка
 
@@ -20,7 +20,7 @@ void Ships::createFleet(std::vector<std::vector<Cell>>& currentMap, int random, 
 	int temp_size_ship = 1;
 	if (random) {
 		int currnt = 0;
-		while (currnt < max) {
+		while (currnt < max_deck) {
 			if (fuel) {
 				/*temp_ship = fuelShip(4, rand() % 2);*/
 				Ship* temp_ship = new fuelShip(4, rand() % 2);
@@ -42,10 +42,10 @@ void Ships::createFleet(std::vector<std::vector<Cell>>& currentMap, int random, 
 			else {
 				temp_size_ship = 1 + rand() % max_length_ship;
 				do {
-					if ((temp_size_ship + currnt) > max) {
+					if ((temp_size_ship + currnt) > max_deck) {
 						temp_size_ship--;
 					}
-				} while ((temp_size_ship + currnt) > max);
+				} while ((temp_size_ship + currnt) > max_deck);
 				Ship* temp_ship = new defoltShip(temp_size_ship, rand() % 2);
 				temp_ship->randomPlaceShip(temp_ship, currentMap, height, length);
 				currnt += temp_size_ship;
@@ -59,9 +59,9 @@ void Ships::createFleet(std::vector<std::vector<Cell>>& currentMap, int random, 
 	}
 }
 
-void Ships::checkShipInHit(std::pair<int, int>& pairXY, std::vector<std::vector<Cell>>& currentMap, int height, int length, Ships& currentShips) {
+void Ships::checkShipInHit(pair<int, int>& pairXY, vector<vector<Cell>>& currentMap, int height, int length, Ships& currentShips) {
 	Ship* tempShip = nullptr;
-	std::vector<Ship*> ships = currentShips.allShips;
+	vector<Ship*> ships = currentShips.allShips;
 
 	for (Ship* ship : ships) {
 		auto it = ship->coordinatesShip.find(pairXY);
@@ -73,7 +73,7 @@ void Ships::checkShipInHit(std::pair<int, int>& pairXY, std::vector<std::vector<
 	if (tempShip) {
 		tempShip->countHit -= 1;
 		if (tempShip->countHit == 0) {
-			std::vector<std::pair<int, int>> hits;
+			vector<pair<int, int>> hits;
 			tempShip->destroyShip(currentMap, tempShip, height, length, hits);
 			for (int i = 0; i < hits.size(); i++) {
 				checkShipInHit(hits[i], currentMap, height, length, currentShips);

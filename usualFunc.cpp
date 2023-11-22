@@ -1,10 +1,10 @@
 #include "usualFunc.h"
-
+using namespace std;
 bool usualFunc::isCellInMap(int x, int y, int height, int length) {
     return (x >= 0) && (y >= 0) && (x < height) && (y < length);
 }
 
-bool usualFunc::isCellForShip(std::vector<std::vector<Cell>>& currentMap, int x, int y, int height, int length) {
+bool usualFunc::isCellForShip(vector<vector<Cell>>& currentMap, int x, int y, int height, int length) {
     if (!isCellInMap(x, y, height, length) || currentMap[x][y].isShip) {
         return false;
     }

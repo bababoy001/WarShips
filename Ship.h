@@ -7,21 +7,23 @@
 #include "Coordinates.h"
 #include "usualFunc.h"
 
+using namespace std;
+
 class Ship {
 public:
     Ship();
-    Ship(int numDeck, std::string name, bool horizontal);
+    Ship(int numDeck, string name, bool horizontal);
     Ship(int numDeck, bool horizontal);
 
-    virtual void randomPlaceShip(Ship* ship_temp, std::vector<std::vector<Cell>>& currentMap, int height, int length);
-    virtual void fromVectorToMap(Ship* ship_temp, std::vector<std::vector<Cell>>& currentMap);
-    virtual void destroyShip(std::vector<std::vector<Cell>>& currentMap, Ship* tempShip, int height, int length, std::vector<std::pair<int, int>>& hits);
+    virtual void randomPlaceShip(Ship* ship_temp, vector<vector<Cell>>& currentMap, int height, int length);
+    virtual void fromVectorToMap(Ship* ship_temp, vector<vector<Cell>>& currentMap);
+    virtual void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length, vector<pair<int, int>>& hits);
 
     int numDeck;
     bool horizontal;
     int countHit;
-    std::string name;
+    string name;
     usualFunc check;
     Coordinates coord;
-    std::map<std::pair<int, int>, Ship> coordinatesShip;
+    map<pair<int, int>, Ship> coordinatesShip;
 };

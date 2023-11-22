@@ -6,14 +6,16 @@
 #include "defoltShip.h"
 #include "Cell.h"
 
+using namespace std;
+
 class Ships {
 public:
     Ships();
     ~Ships();
-    void createFleet(std::vector<std::vector<Cell>>& currentMap, int random, int height, int length);
-    void checkShipInHit(std::pair<int, int>& pairXY, std::vector<std::vector<Cell>>& currentMap, int height, int length, Ships& currentShips);
+    void createFleet(vector<vector<Cell>>& currentMap, int random, int height, int length);
+    void checkShipInHit(pair<int, int>& pairXY, vector<vector<Cell>>& currentMap, int height, int length, Ships& currentShips);
 
-    std::vector <Ship*> allShips;
+    vector <Ship*> allShips;
     int countReadyShip;
 
 private:

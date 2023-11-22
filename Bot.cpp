@@ -1,6 +1,6 @@
 #include "Bot.h"
-
-std::pair<int, int> Bot::attack(bool& playerTurn, std::vector<std::vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) {
+using namespace std;
+pair<int, int> Bot::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) {
 	int x;
 	int y;
 
@@ -13,11 +13,11 @@ std::pair<int, int> Bot::attack(bool& playerTurn, std::vector<std::vector<Cell>>
 	if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
 		currentMap[x][y].isMiss = 1;
 		playerTurn = !playerTurn;
-		return std::make_pair(-1, -1);
+		return make_pair(-1, -1);
 	}
 	if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
 		currentMap[x][y].isHit = 1;
-		return std::make_pair(x, y);
+		return make_pair(x, y);
 	}
 }
 

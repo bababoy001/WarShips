@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include <utility>
-
+using namespace std;
 class Coordinates {
 public:
     Coordinates();
-    std::vector<std::pair<int, int>> coorXY;
+    vector<pair<int, int>> coorXY;
 };

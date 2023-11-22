@@ -1,15 +1,15 @@
 #include "fuelShip.h"
-
+using namespace std;
 fuelShip::fuelShip(int numDeck, bool horizontal) : Ship(numDeck, "fuelShip", horizontal) {}
 
-void fuelShip::fromVectorToMap(Ship* ship_temp, std::vector<std::vector<Cell>>& currentMap) {
+void fuelShip::fromVectorToMap(Ship* ship_temp, vector<vector<Cell>>& currentMap) {
     for (int i = 0; i < ship_temp->numDeck; i++) {
         currentMap[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].symbol = 'F';
         currentMap[ship_temp->coord.coorXY[i].first][ship_temp->coord.coorXY[i].second].isShip = 1;
     }
 }
 
-void fuelShip::destroyShip(std::vector<std::vector<Cell>>& currentMap, Ship* tempShip, int height, int length, std::vector<std::pair<int, int>>& hits) {
+void fuelShip::destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length, vector<pair<int, int>>& hits) {
 	for (const auto& coord : tempShip->coordinatesShip) {
 		int x = coord.first.first;
 		int y = coord.first.second;
@@ -19,7 +19,7 @@ void fuelShip::destroyShip(std::vector<std::vector<Cell>>& currentMap, Ship* tem
 					currentMap[x + dx][y + dy].isMiss = 1;
 					if (currentMap[x + dx][y + dy].isShip) {
 						currentMap[x + dx][y + dy].isHit = 1;
-						hits.push_back(std::make_pair(x + dx, y + dy));
+						hits.push_back(make_pair(x + dx, y + dy));
 					}
 				}
 			}

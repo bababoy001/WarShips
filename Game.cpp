@@ -1,13 +1,13 @@
 #include "Game.h"
-
+using namespace std;
 Game::Game() : height(10), length(10), lvlBot(0), gameEnded(false), playerTurn(true), bot(nullptr) {}
 
 Game::~Game() {
     delete bot;
 }
 
-std::vector<std::vector<Cell>> Game::createMap() {
-    return std::vector<std::vector<Cell>>(height, std::vector<Cell>(length));
+vector<vector<Cell>> Game::createMap() {
+    return vector<vector<Cell>>(height, vector<Cell>(length));
 }
 
 void Game::enterSettings() {
@@ -36,17 +36,17 @@ void Game::startGame() {
     enemyMap = createMap();
     myShips.createFleet(map, 1, height, length);
     enemyShips.createFleet(enemyMap, 1, height, length);
-    std::pair<int, int> pairForMiss = std::make_pair(-1, -1);
+    pair<int, int> pairForMiss = make_pair(-1, -1);
     while (!gameEnded) {
         if (playerTurn) {
             printAll.printAllMaps(map, enemyMap, height, length);
-            std::pair<int, int> pairXY = attackPlayer(enemyMap, height, length);
+            pair<int, int> pairXY = attackPlayer(enemyMap, height, length);
             if (pairXY != pairForMiss) {
                 myShips.checkShipInHit(pairXY, enemyMap, height, length, enemyShips);
             }
         }
         else {
-            std::pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip);
+            pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip);
             if (pairXY != pairForMiss) {
                 enemyShips.checkShipInHit(pairXY, map, height, length, myShips);
             }
@@ -66,7 +66,7 @@ void Game::startGame() {
     }
 }
 
-std::pair<int, int> Game::attackPlayer(std::vector<std::vector<Cell>>& currentMap, int height, int length) {
+pair<int, int> Game::attackPlayer(vector<vector<Cell>>& currentMap, int height, int length) {
     int x, y;
 
     printAll.printSentence("Enter coordinates (number letter): ");
