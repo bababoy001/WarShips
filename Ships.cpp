@@ -9,53 +9,74 @@ Ships::~Ships() {
     }
 }
 
-void Ships::createFleet(vector<vector<Cell>>& currentMap, int random, int height, int length) {
-	int max_length_ship = 4;// 4
-	int max_deck = (height * length * 0.2);
-	int max_unique = (max_deck * 0.2) / 4;
-	int fuel = max_unique; // зробити функцію запросу для користувача
-	int zalp = 0; // зробити функцію запросу для користувача + перевірка
-
-	usualFunc check;
+void Ships::createFleet(vector<vector<Cell>>& currentMap, bool random, int height, int length) {
+	numberOfDecks(height, length, random);
 	int temp_size_ship = 1;
-	if (random) {
-		int currnt = 0;
-		while (currnt < max_deck) {
-			if (fuel) {
-				/*temp_ship = fuelShip(4, rand() % 2);*/
-				Ship* temp_ship = new fuelShip(4, rand() % 2);
-				temp_ship->randomPlaceShip(temp_ship, currentMap, height, length);
-				currnt += 4;
-				fuel--;
-				allShips.push_back(temp_ship);
-				countReadyShip++;
-			}
-			else if (zalp) {
-				/*temp_ship = zalpShip(4, rand() % 2);*/
-				Ship* temp_ship = new zalpShip(4, rand() % 2);
-				temp_ship->randomPlaceShip(temp_ship, currentMap, height, length);
-				currnt += 4;
-				zalp--;
-				allShips.push_back(temp_ship);
-				countReadyShip++;
+	bool horizontal = 0;
+	int currnt = 0;
+	while (currnt < max_deck) {
+		if (fuel) {
+			if (random) {
+				horizontal = rand() % 2;
 			}
 			else {
+				printAll.printMap(currentMap, height, length);
+				printAll.isShipHorizonal(horizontal);
+			}
+			Ship* temp_ship = new fuelShip(4, horizontal);
+			temp_ship->PlaceShip(temp_ship, currentMap, height, length, random, horizontal);
+			currnt += 4;
+			fuel--;
+			allShips.push_back(temp_ship);
+		}
+		else if (zalp) {
+			if (random) {
+				horizontal = rand() % 2;
+			}
+			else{
+				printAll.printMap(currentMap, height, length);
+				printAll.isShipHorizonal(horizontal);
+			}
+			Ship* temp_ship = new zalpShip(4, horizontal);
+			temp_ship->PlaceShip(temp_ship, currentMap, height, length, random, horizontal);
+			currnt += 4;
+			zalp--;
+			allShips.push_back(temp_ship);
+		}
+		else {
+			if (random) {
 				temp_size_ship = 1 + rand() % max_length_ship;
 				do {
 					if ((temp_size_ship + currnt) > max_deck) {
 						temp_size_ship--;
 					}
 				} while ((temp_size_ship + currnt) > max_deck);
-				Ship* temp_ship = new defoltShip(temp_size_ship, rand() % 2);
-				temp_ship->randomPlaceShip(temp_ship, currentMap, height, length);
-				currnt += temp_size_ship;
-				allShips.push_back(temp_ship);
-				countReadyShip++;
+				horizontal = rand() % 2;
 			}
+			else if (!random) {
+				printAll.printMap(currentMap, height, length);
+				printAll.createShip(temp_size_ship, horizontal, currnt, max_deck, max_length_ship);
+			}
+			Ship* temp_ship = new defoltShip(temp_size_ship, horizontal);
+			temp_ship->PlaceShip(temp_ship, currentMap, height, length, random, horizontal);
+			allShips.push_back(temp_ship);
+			currnt += temp_size_ship;
 		}
+		countReadyShip++;
+		system("cls");
 	}
+}
+
+void Ships::numberOfDecks(int height, int length, bool random) {
+	max_length_ship = 4;//4
+	max_deck = (height * length * 0.2);
+	max_unique = (max_deck * 0.2) / 4;
 	if (!random) {
-		//PlaceShip(*ship_temp);
+		printAll.numberOfUniqueShips(max_unique, fuel, zalp);
+	}
+	else if (random) {
+		fuel = 1 + rand() % max_unique;
+		zalp = max_unique - fuel;
 	}
 }
 

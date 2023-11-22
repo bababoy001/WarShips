@@ -61,8 +61,12 @@ void Print::printSentence(string sentence) {
     cout << endl << sentence << endl;
 }
 
-void Print::cinCoord(int& number, char& letter) {
+void Print::cinCoord(int& x, int& y) {
+	char letter;
+	int number;
     cin >> number >> letter;
+	x = number - 1;
+	y = letter - 'a';
 }
 
 void Print::printAllMaps(vector<vector<Cell>>& map, vector<vector<Cell>>& enemyMap, int height, int length) {
@@ -72,4 +76,27 @@ void Print::printAllMaps(vector<vector<Cell>>& map, vector<vector<Cell>>& enemyM
 
 	printSentence("Enemy's Map:");
 	printMap(enemyMap, height, length);
+}
+
+void Print::numberOfUniqueShips(int max_unique, int& fuel, int& zalp) {
+	cout << "You have " << max_unique << " unique Ships, enter number of fuel ships (the remainder will be salvo ships): ";
+	cin >> fuel;
+	zalp = max_unique - fuel;
+}
+
+void Print::createShip(int& temp_size_ship, bool& horizontal, int currnt, int max_deck, int max_length_ship) {
+	cout << "!(Available " << max_deck - currnt << " decks, maximum length of the ship " << max_length_ship << " )!";
+	cout << endl <<"Enter size of ship : ";
+	cin >> temp_size_ship;
+	if ((temp_size_ship + currnt) > max_deck) {
+		cout << endl << "Wrong size, try again.";
+		temp_size_ship = 1;
+		return createShip(temp_size_ship, horizontal, currnt, max_deck, max_length_ship);
+	}
+	isShipHorizonal(horizontal);
+}
+
+void Print::isShipHorizonal(bool& horizontal) {
+	cout << endl << "Enter '1' if you want a horizontal ship and '0' if vertical : ";
+	cin >> horizontal;
 }

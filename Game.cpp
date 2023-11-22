@@ -34,7 +34,7 @@ void Game::startGame() {
     enterSettings();
     map = createMap();
     enemyMap = createMap();
-    myShips.createFleet(map, 1, height, length);
+    myShips.createFleet(map, 0, height, length);
     enemyShips.createFleet(enemyMap, 1, height, length);
     pair<int, int> pairForMiss = make_pair(-1, -1);
     while (!gameEnded) {
@@ -70,12 +70,8 @@ pair<int, int> Game::attackPlayer(vector<vector<Cell>>& currentMap, int height, 
     int x, y;
 
     printAll.printSentence("Enter coordinates (number letter): ");
-    char letter;
-    int number;
-    printAll.cinCoord(number, letter);
-
-    x = number - 1;
-    y = letter - 'a';
+    
+    printAll.cinCoord(x, y);
 
     if (!check.isCellInMap(x, y, height, length)) {
         printAll.printSentence("Wrong coordinates");
