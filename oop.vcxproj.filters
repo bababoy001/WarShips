@@ -60,6 +60,9 @@
     <ClCompile Include="zalpShip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bot.h">
@@ -102,6 +105,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="zalpShip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

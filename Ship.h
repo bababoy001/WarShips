@@ -15,6 +15,7 @@ public:
     Ship();
     Ship(int numDeck, string name, bool horizontal);
     Ship(int numDeck, bool horizontal);
+    Ship(int numDeck, string name);
 
     virtual void PlaceShip(Ship* ship_temp, vector<vector<Cell>>& currentMap, int height, int length, bool random, bool horizontal);
     virtual void fromVectorToMap(Ship* ship_temp, vector<vector<Cell>>& currentMap);

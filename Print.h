@@ -16,4 +16,5 @@ public:
     void numberOfUniqueShips(int max_unique, int& fuel, int& zalp);
     void isShipHorizonal(bool& horizontal);
     void createShip(int& temp_size_ship, bool& horizontal, int currnt, int max_deck, int max_length_ship);
+    void placeShip(bool& random);
 };

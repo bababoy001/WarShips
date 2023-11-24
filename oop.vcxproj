@@ -136,6 +136,7 @@
     <ClCompile Include="defoltShip.cpp" />
     <ClCompile Include="fuelShip.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="mine.cpp" />
     <ClCompile Include="oop.cpp" />
     <ClCompile Include="Print.cpp" />
     <ClCompile Include="Ship.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="defoltShip.h" />
     <ClInclude Include="fuelShip.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="mine.h" />
     <ClInclude Include="Print.h" />
     <ClInclude Include="Ship.h" />
     <ClInclude Include="Ships.h" />

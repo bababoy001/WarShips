@@ -30,7 +30,9 @@ private:
     int length;
     int lvlBot;
     Bot* bot;
-    bool random = 1;
+    bool random;
+    bool zalp = 0;
+    int zalpNum = 0;
     vector<vector<Cell>> createMap();
     void enterSettings();
     pair<int, int> attackPlayer(vector<vector<Cell>>& currentMap, int height, int length);

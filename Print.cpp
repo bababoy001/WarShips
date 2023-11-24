@@ -70,7 +70,7 @@ void Print::cinCoord(int& x, int& y) {
 }
 
 void Print::printAllMaps(vector<vector<Cell>>& map, vector<vector<Cell>>& enemyMap, int height, int length) {
-	system("cls");
+	
 	printSentence("Your Map:");
 	printMap(map, height, length);
 
@@ -99,4 +99,9 @@ void Print::createShip(int& temp_size_ship, bool& horizontal, int currnt, int ma
 void Print::isShipHorizonal(bool& horizontal) {
 	cout << endl << "Enter '1' if you want a horizontal ship and '0' if vertical : ";
 	cin >> horizontal;
+}
+
+void Print::placeShip(bool& random) {
+	cout << endl << "Enter '1' if you want the ship in a random location and '0' if you want to set it manually : ";
+	cin >> random;
 }

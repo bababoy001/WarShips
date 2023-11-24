@@ -9,6 +9,9 @@ Ship::Ship(int numDeck, string name, bool horizontal)
 Ship::Ship(int numDeck, bool horizontal)
     : numDeck(numDeck), horizontal(horizontal), countHit(numDeck) {}
 
+Ship::Ship(int numDeck, string name)
+	: numDeck(numDeck), name(name), countHit(numDeck) {}
+
 void Ship::PlaceShip(Ship* ship_temp, vector<vector<Cell>>& currentMap, int height, int length, bool random, bool horizontal) {
 	bool wrongPlace;
 	int x;
@@ -84,7 +87,7 @@ void Ship::destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int hei
 		int y = coord.first.second;
 		for (int dx = -1; dx <= 1; dx++) {
 			for (int dy = -1; dy <= 1; dy++) {
-				if (check.isCellInMap(x + dx, y + dy, height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
+				if (check.isCellInMap((x + dx), (y + dy), height, length) && !currentMap[x + dx][y + dy].isHit && !currentMap[x + dx][y + dy].isMiss) {
 					currentMap[x + dx][y + dy].isMiss = 1;
 				}
 			}

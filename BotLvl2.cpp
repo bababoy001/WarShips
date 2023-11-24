@@ -1,21 +1,22 @@
 #include "BotLvl2.h"
 #include <cstdlib>
 using namespace std;
-BotLvl2::BotLvl2() : firstHit(-1, -1), lastHit(-1, -1), destroying(false), directionIndex(0), foundDirection(false), attempt(0), lastPlayerShips(0) {}
+BotLvl2::BotLvl2() : firstHit(-1, -1), lastHit(-1, -1), destroying(false), directionIndex(0), foundDirection(false), attempt(0), lastPlayerShips(0), lastPlayerMines(0){}
 
-pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) {
+pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, int currntPlayerMines) {
     int x, y;
-    if (currntPlayerShips < lastPlayerShips) {
+    if (currntPlayerShips < lastPlayerShips || currntPlayerMines < lastPlayerMines) {
         attempt = 0;
         destroying = 0;
         foundDirection = 0;
     }
     lastPlayerShips = currntPlayerShips;
+    lastPlayerMines = currntPlayerMines;
     botShoot(currentMap, height, length, x, y);
 
     if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
         printAll.printSentence("This cell already hitted");
-        return attack(playerTurn, currentMap, height, length, currntPlayerShips);
+        return attack(playerTurn, currentMap, height, length, currntPlayerShips, currntPlayerMines);
     }
     if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
         currentMap[x][y].isMiss = 1;

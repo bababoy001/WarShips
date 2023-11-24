@@ -12,6 +12,7 @@ vector<vector<Cell>> Game::createMap() {
 
 void Game::enterSettings() {
     printAll.sizeMap(height, length);
+    printAll.placeShip(random);
     printAll.lvlChoice(lvlBot);
     switch (lvlBot) {
     case 1:
@@ -34,7 +35,7 @@ void Game::startGame() {
     enterSettings();
     map = createMap();
     enemyMap = createMap();
-    myShips.createFleet(map, 0, height, length);
+    myShips.createFleet(map, random, height, length);
     enemyShips.createFleet(enemyMap, 1, height, length);
     pair<int, int> pairForMiss = make_pair(-1, -1);
     while (!gameEnded) {
@@ -42,13 +43,46 @@ void Game::startGame() {
             printAll.printAllMaps(map, enemyMap, height, length);
             pair<int, int> pairXY = attackPlayer(enemyMap, height, length);
             if (pairXY != pairForMiss) {
-                myShips.checkShipInHit(pairXY, enemyMap, height, length, enemyShips);
+                if (myShips.isMine(pairXY, map, height, length, enemyShips, zalp, myShips)) {
+
+                }
+                else {
+                    myShips.checkShipInHit(pairXY, enemyMap, height, length, enemyShips, zalp);
+                }
+            }
+            else if (zalpNum) {
+                printAll.printSentence("The enemy destroys your main ship, you can fire back");
+                playerTurn = !playerTurn;
+                zalpNum--;
+            }
+            if (zalp) {
+                printAll.printSentence("You destroy the enemy's capital ship, the enemy will fire a salvo in response");
+                playerTurn = !playerTurn;
+                zalpNum = 2;
+                zalp = 0;
             }
         }
         else {
-            pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip);
+            pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip, myShips.countReadyMines);
             if (pairXY != pairForMiss) {
-                enemyShips.checkShipInHit(pairXY, map, height, length, myShips);
+                if (enemyShips.isMine(pairXY, enemyMap, height, length, myShips, zalp, enemyShips)) {
+
+                }
+                else {
+                    enemyShips.checkShipInHit(pairXY, map, height, length, myShips, zalp);
+                }
+                
+            }
+            else if (zalpNum) {
+                printAll.printSentence("You destroy the enemy's capital ship, the enemy will fire a salvo in response");
+                playerTurn = !playerTurn;
+                zalpNum--;
+            }
+            if (zalp) {
+                printAll.printSentence("The enemy destroys your main ship, you can fire back");
+                playerTurn = !playerTurn;
+                zalpNum = 2;
+                zalp = 0;
             }
         }
 
@@ -84,10 +118,10 @@ pair<int, int> Game::attackPlayer(vector<vector<Cell>>& currentMap, int height, 
     if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
         currentMap[x][y].isMiss = 1;
         playerTurn = !playerTurn;
-        return std::make_pair(-1, -1);
+        return make_pair(-1, -1);
     }
     if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
         currentMap[x][y].isHit = 1;
-        return std::make_pair(x, y);
+        return make_pair(x, y);
     }
 }
