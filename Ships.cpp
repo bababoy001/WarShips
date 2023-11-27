@@ -126,7 +126,7 @@ bool Ships::isMine(pair<int, int>& pairXY, vector<vector<Cell>>& map, int height
 			int x = pairXY.first;
 			int y = pairXY.second;
 			if (map[x][y].isMine) {
-				map[x][y].isHit = 1;
+				map[x][y].isMiss = 1;
 				myShips.countReadyMines--;
 			}
 			else if (!map[x][y].isHit && !map[x][y].isMiss && !map[x][y].isShip) {

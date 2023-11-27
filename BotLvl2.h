@@ -8,7 +8,7 @@ class BotLvl2 : public Bot {
 public:
     BotLvl2();
 
-    pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) override;
+    pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines) override;
 
 private:
     pair<int, int> firstHit;

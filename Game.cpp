@@ -44,7 +44,7 @@ void Game::startGame() {
             pair<int, int> pairXY = attackPlayer(enemyMap, height, length);
             if (pairXY != pairForMiss) {
                 if (myShips.isMine(pairXY, map, height, length, enemyShips, zalp, myShips)) {
-
+                    mines.push_back(pairXY);
                 }
                 else {
                     myShips.checkShipInHit(pairXY, enemyMap, height, length, enemyShips, zalp);
@@ -63,7 +63,7 @@ void Game::startGame() {
             }
         }
         else {
-            pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip);
+            pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip, mines);
             if (pairXY != pairForMiss) {
                 if (enemyShips.isMine(pairXY, enemyMap, height, length, myShips, zalp, enemyShips)) {
 
@@ -118,6 +118,7 @@ pair<int, int> Game::attackPlayer(vector<vector<Cell>>& currentMap, int height, 
 
     if (currentMap[x][y].isMine) {
         currentMap[x][y].isHit = 1;
+        playerTurn = !playerTurn;
         return make_pair(x, y);
     }
     else if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {

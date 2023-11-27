@@ -21,6 +21,10 @@ void fuelShip::destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int
 						currentMap[x + dx][y + dy].isHit = 1;
 						hits.push_back(make_pair(x + dx, y + dy));
 					}
+					else if (currentMap[x + dx][y + dy].isMine) {
+						currentMap[x + dx][y + dy].isMine = 1;
+						currentMap[x + dx][y + dy].isHit = 1;
+					}
 				}
 			}
 		}

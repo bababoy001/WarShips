@@ -3,7 +3,7 @@
 using namespace std;
 BotLvl2::BotLvl2() : firstHit(-1, -1), lastHit(-1, -1), destroying(false), directionIndex(0), foundDirection(false), attempt(0), lastPlayerShips(0){}
 
-pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) {
+pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines) {
     int x, y;
     if (currntPlayerShips < lastPlayerShips ) {
         attempt = 0;
@@ -18,11 +18,12 @@ pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMa
     //}
     if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
         printAll.printSentence("This cell already hitted");
-        return attack(playerTurn, currentMap, height, length, currntPlayerShips);
+        return attack(playerTurn, currentMap, height, length, currntPlayerShips, mines);
     }
    
     if (currentMap[x][y].isMine) {
         currentMap[x][y].isHit = 1;
+        playerTurn = !playerTurn;
         return make_pair(x, y);
     }
     else if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {

@@ -36,4 +36,5 @@ private:
     vector<vector<Cell>> createMap();
     void enterSettings();
     pair<int, int> attackPlayer(vector<vector<Cell>>& currentMap, int height, int length);
+    vector<pair<int, int>> mines;
 };
