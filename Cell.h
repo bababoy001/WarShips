@@ -8,5 +8,7 @@ public:
     bool isMiss;
     bool isHit;
     bool isAlive;
+    bool isMine;
+    bool isHitFromMine;
     char symbol;
 };

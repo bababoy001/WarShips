@@ -1,29 +1,36 @@
 #include "BotLvl2.h"
 #include <cstdlib>
 using namespace std;
-BotLvl2::BotLvl2() : firstHit(-1, -1), lastHit(-1, -1), destroying(false), directionIndex(0), foundDirection(false), attempt(0), lastPlayerShips(0), lastPlayerMines(0){}
+BotLvl2::BotLvl2() : firstHit(-1, -1), lastHit(-1, -1), destroying(false), directionIndex(0), foundDirection(false), attempt(0), lastPlayerShips(0){}
 
-pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, int currntPlayerMines) {
+pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) {
     int x, y;
-    if (currntPlayerShips < lastPlayerShips || currntPlayerMines < lastPlayerMines) {
+    if (currntPlayerShips < lastPlayerShips ) {
         attempt = 0;
         destroying = 0;
         foundDirection = 0;
     }
     lastPlayerShips = currntPlayerShips;
-    lastPlayerMines = currntPlayerMines;
     botShoot(currentMap, height, length, x, y);
-
+    //if (!check.isCellInMap(x, y, height, length)) {       //видалити після перевірок
+    //    printAll.printSentence("Wrong coordinates Bot");
+    //    return attack(playerTurn, currentMap, height, length, currntPlayerShips);
+    //}
     if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
         printAll.printSentence("This cell already hitted");
-        return attack(playerTurn, currentMap, height, length, currntPlayerShips, currntPlayerMines);
+        return attack(playerTurn, currentMap, height, length, currntPlayerShips);
     }
-    if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
+   
+    if (currentMap[x][y].isMine) {
+        currentMap[x][y].isHit = 1;
+        return make_pair(x, y);
+    }
+    else if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
         currentMap[x][y].isMiss = 1;
         playerTurn = !playerTurn;
         return make_pair(-1, -1);
     }
-    if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
+    else if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
         currentMap[x][y].isHit = 1;
         if (!destroying) {
             firstHit = make_pair(x, y);
@@ -36,8 +43,11 @@ pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMa
 
 void BotLvl2::botShoot(vector<vector<Cell>>& currentMap, int height, int length, int& x, int& y) {
     if (!destroying) {
-        x = rand() % height;
+        x = rand() % height;            //розкоментувати після перевірки
         y = rand() % length;
+        //printAll.cinCoord(x, y);      //видалити після перевірок
+
+        
     }
     else {
         findNextTarget(currentMap, x, y, height, length);
@@ -48,6 +58,7 @@ void BotLvl2::findNextTarget(vector<vector<Cell>>& currentMap, int& x, int& y, i
     if (attempt >= 4) {
         x = -1;
         y = -1;
+        printAll.printSentence("attempt attempt");  //перевірка
         return;
     }
 
@@ -84,11 +95,28 @@ void BotLvl2::findNextTarget(vector<vector<Cell>>& currentMap, int& x, int& y, i
             return;
         }
     }
+    else if (check.isCellInMap(newX, newY, height, length) && currentMap[newX][newY].isMiss) {
+        lastHit = firstHit;
+        if (foundDirection) {
+            reverseDirection();
+            findNextTarget(currentMap, x, y, height, length);
+        }
+        else {
+            directionIndex = (directionIndex + 1) % 4;
+            attempt++;
+            findNextTarget(currentMap, x, y, height, length);
+        }
+    }
     else if (!currentMap[newX][newY].isHit && currentMap[newX][newY].isShip) {
         x = newX;
         y = newY;
         lastHit = make_pair(x, y);
         foundDirection = 1;
+    }
+    else if (currentMap[newX][newY].isHitFromMine && currentMap[newX][newY].isShip) {
+        lastHit = make_pair(newX, newY);
+        foundDirection = 1;
+        findNextTarget(currentMap, x, y, height, length);
     }
     else {
         directionIndex = (directionIndex + 1) % 4;

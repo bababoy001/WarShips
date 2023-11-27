@@ -18,10 +18,10 @@ public:
     void checkShipInHit(pair<int, int>& pairXY, vector<vector<Cell>>& currentMap, int height, int length, Ships& currentShips, bool& zalp);
     bool isMine(pair<int, int>& pairXY, vector<vector<Cell>>& map, int height, int length, Ships& enemyShips, bool& zalp, Ships& myShips);
     vector <Ship*> allShips;
-    vector <Ship*> allMines;
+    vector <mine> allMines;
     int countReadyShip;
     int countReadyMines;
-
+    vector<pair<int, int>> Allhits;// для всіх влучань (третій бот)
 private:
     usualFunc check;
     Print printAll;

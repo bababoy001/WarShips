@@ -37,9 +37,18 @@ void Print::printMap(vector<vector<Cell>>& currentMap, int height, int length) {
 			if (currentMap[i][j].isShip) {
 				if (currentMap[i][j].isHit) {
 					cout << "X ";
-					continue;
 				}
-				cout << currentMap[i][j].symbol << " ";
+				else {
+					cout << currentMap[i][j].symbol << " ";
+				}
+			}
+			else if (currentMap[i][j].isMine) {
+				if (currentMap[i][j].isHit) {
+					cout << "@ ";
+				}
+				else {
+					cout << currentMap[i][j].symbol << " ";
+				}
 			}
 			else if (currentMap[i][j].isMiss) {
 				cout << "* ";

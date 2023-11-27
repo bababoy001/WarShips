@@ -8,7 +8,7 @@ class BotLvl2 : public Bot {
 public:
     BotLvl2();
 
-    pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, int currntPlayerMines) override;
+    pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips) override;
 
 private:
     pair<int, int> firstHit;
@@ -18,7 +18,6 @@ private:
     bool foundDirection;
     int attempt;
     int lastPlayerShips;
-    int lastPlayerMines;
     void botShoot(vector<vector<Cell>>& currentMap, int height, int length, int& x, int& y);
     void findNextTarget(vector<vector<Cell>>& currentMap, int& x, int& y, int height, int length);
     void reverseDirection();

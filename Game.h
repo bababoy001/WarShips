@@ -23,13 +23,13 @@ private:
     Ships myShips;
     Ships enemyShips;
     usualFunc check;
+    Print printAll;
+    Bot* bot;
     bool gameEnded;
     bool playerTurn;
-    Print printAll;
     int height;
     int length;
     int lvlBot;
-    Bot* bot;
     bool random;
     bool zalp = 0;
     int zalpNum = 0;

@@ -68,10 +68,10 @@ void Ships::createFleet(vector<vector<Cell>>& currentMap, bool random, int heigh
 	currnt = 0;
 	while (currnt < max_mine) {
 		printAll.printMap(currentMap, height, length);
-		Ship* temp_ship = new mine(1);
-		temp_ship->PlaceShip(temp_ship, currentMap, height, length, random, horizontal);
+		mine temp_mine;
+		temp_mine.PlaceMine(&temp_mine, currentMap, height, length, random);
 		currnt += 1;
-		allMines.push_back(temp_ship);
+		allMines.push_back(temp_mine);
 		countReadyMines++;
 		system("cls");
 	}
@@ -105,7 +105,7 @@ void Ships::checkShipInHit(pair<int, int>& pairXY, vector<vector<Cell>>& current
 	if (tempShip) {
 		tempShip->countHit -= 1;
 		if (tempShip->countHit == 0) {
-			vector<pair<int, int>> hits;
+			vector<pair<int, int>> hits;// для влучань від топливного корабля і залпу
 			tempShip->destroyShip(currentMap, tempShip, height, length, hits);
 			if (hits.size() == 1 && hits[0] == make_pair(-1, -1)) {
 				zalp = 1;
@@ -115,36 +115,32 @@ void Ships::checkShipInHit(pair<int, int>& pairXY, vector<vector<Cell>>& current
 					checkShipInHit(hits[i], currentMap, height, length, currentShips, zalp);
 				}
 			}
-
 			currentShips.countReadyShip--;
 		}
 	}
 }
 
 bool Ships::isMine(pair<int, int>& pairXY, vector<vector<Cell>>& map, int height, int length, Ships& enemyShips, bool& zalp, Ships& myShips) {
-	Ship* tempMine = nullptr;
-	vector<Ship*> mines = enemyShips.allMines;
-
-	for (Ship* mine : mines) {
-		auto it = mine->coordinatesShip.find(pairXY);
-		if (it != mine->coordinatesShip.end()) {
-			tempMine = mine;
-			break;
+	for (int i = 0; i < enemyShips.allMines.size(); i++) {
+		if (enemyShips.allMines[i].coordinatesMine == pairXY) {
+			int x = pairXY.first;
+			int y = pairXY.second;
+			if (map[x][y].isMine) {
+				map[x][y].isHit = 1;
+				myShips.countReadyMines--;
+			}
+			else if (!map[x][y].isHit && !map[x][y].isMiss && !map[x][y].isShip) {
+				map[x][y].isMiss = 1;
+			}
+			else if (map[x][y].isShip && !map[x][y].isHit) {
+				map[x][y].isHit = 1;
+				map[x][y].isHitFromMine = 1;
+				Allhits.push_back(make_pair(x, y));
+				enemyShips.checkShipInHit(pairXY, map, height, length, myShips, zalp);
+			}
+			enemyShips.countReadyMines--;
+			return true;
 		}
-	}
-	if (tempMine) {
-		tempMine->countHit -= 1;
-		int x = pairXY.first;
-		int y = pairXY.second;
-		if (!map[x][y].isHit && !map[x][y].isMiss && !map[x][y].isShip) {
-			map[x][y].isMiss = 1;
-		}
-		if (map[x][y].isShip && !map[x][y].isHit) {
-			map[x][y].isHit = 1;
-			enemyShips.checkShipInHit(pairXY, map, height, length, myShips, zalp);
-		}
-		enemyShips.countReadyMines--;
-		return true;
 	}
 	return false;
 }

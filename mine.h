@@ -1,11 +1,17 @@
 #pragma once
-#include "Ship.h"
+#include <vector>
+#include <utility>
+#include "Cell.h"
+#include "usualFunc.h"
+#include "Print.h"
 using namespace std;
 
-class mine : public Ship {
+class mine {
 public:
-    mine(int numDeck);
-    void PlaceShip(Ship* ship_temp, vector<vector<Cell>>& currentMap, int height, int length, bool random, bool horizontal) override;
-    void fromVectorToMap(Ship* ship_temp, vector<vector<Cell>>& currentMap) override;
-    void destroyShip(vector<vector<Cell>>& currentMap, Ship* tempShip, int height, int length, vector<pair<int, int>>& hits);
+public:
+    mine();
+    void PlaceMine(mine* mine_temp, vector<vector<Cell>>& currentMap, int height, int length, bool random);
+    pair<int, int> coordinatesMine;
+    usualFunc check;
+    Print printAll;
 };

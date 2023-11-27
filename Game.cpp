@@ -63,7 +63,7 @@ void Game::startGame() {
             }
         }
         else {
-            pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip, myShips.countReadyMines);
+            pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip);
             if (pairXY != pairForMiss) {
                 if (enemyShips.isMine(pairXY, enemyMap, height, length, myShips, zalp, enemyShips)) {
 
@@ -111,16 +111,21 @@ pair<int, int> Game::attackPlayer(vector<vector<Cell>>& currentMap, int height, 
         printAll.printSentence("Wrong coordinates");
         return attackPlayer(currentMap, height, length);
     }
-    if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
+    if (currentMap[x][y].isHit || currentMap[x][y].isMiss || currentMap[x][y].isHitFromMine) {
         printAll.printSentence("This cell already hitted");
         return attackPlayer(currentMap, height, length);
     }
-    if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
+
+    if (currentMap[x][y].isMine) {
+        currentMap[x][y].isHit = 1;
+        return make_pair(x, y);
+    }
+    else if (!currentMap[x][y].isHit && !currentMap[x][y].isMiss && !currentMap[x][y].isShip) {
         currentMap[x][y].isMiss = 1;
         playerTurn = !playerTurn;
         return make_pair(-1, -1);
     }
-    if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
+    else if (currentMap[x][y].isShip && !currentMap[x][y].isHit) {
         currentMap[x][y].isHit = 1;
         return make_pair(x, y);
     }
