@@ -9,7 +9,7 @@ using namespace std;
 
 class Bot {
 public:
-    virtual pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines);
+    virtual pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines, pair<int, int >& pairHitedBoards);
     virtual void botShoot(int height, int length, int& x, int& y);
 
 protected:

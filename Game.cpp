@@ -43,11 +43,11 @@ void Game::startGame() {
             printAll.printAllMaps(map, enemyMap, height, length);
             pair<int, int> pairXY = attackPlayer(enemyMap, height, length);
             if (pairXY != pairForMiss) {
-                if (myShips.isMine(pairXY, map, height, length, enemyShips, zalp, myShips)) {
+                if (myShips.isMine(pairXY, map, height, length, enemyShips, zalp, myShips, hitedBoards)) {
                     mines.push_back(pairXY);
                 }
                 else {
-                    myShips.checkShipInHit(pairXY, enemyMap, height, length, enemyShips, zalp);
+                    myShips.checkShipInHit(pairXY, enemyMap, height, length, enemyShips, zalp, hitedBoards);
                 }
             }
             else if (zalpNum) {
@@ -63,13 +63,18 @@ void Game::startGame() {
             }
         }
         else {
-            pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip, mines);
+            if (!hitedBoards.empty()){
+                pairHitedBoards = hitedBoards[0];
+                hitedBoards.erase(hitedBoards.begin());
+            }
+
+            pair<int, int> pairXY = bot->attack(playerTurn, map, height, length, myShips.countReadyShip, mines, pairHitedBoards);
             if (pairXY != pairForMiss) {
-                if (enemyShips.isMine(pairXY, enemyMap, height, length, myShips, zalp, enemyShips)) {
+                if (enemyShips.isMine(pairXY, enemyMap, height, length, myShips, zalp, enemyShips, hitedBoards)) {
 
                 }
                 else {
-                    enemyShips.checkShipInHit(pairXY, map, height, length, myShips, zalp);
+                    enemyShips.checkShipInHit(pairXY, map, height, length, myShips, zalp, hitedBoards);
                 }
                 
             }

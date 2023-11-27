@@ -91,7 +91,7 @@ void Ships::numberOfDecks(int height, int length, bool random) {
 	}
 }
 
-void Ships::checkShipInHit(pair<int, int>& pairXY, vector<vector<Cell>>& currentMap, int height, int length, Ships& currentShips, bool& zalp) {
+void Ships::checkShipInHit(pair<int, int>& pairXY, vector<vector<Cell>>& currentMap, int height, int length, Ships& currentShips, bool& zalp, vector<pair<int, int>> &hitedBoards) {
 	Ship* tempShip = nullptr;
 	vector<Ship*> ships = currentShips.allShips;
 
@@ -112,7 +112,10 @@ void Ships::checkShipInHit(pair<int, int>& pairXY, vector<vector<Cell>>& current
 			}
 			else {
 				for (int i = 0; i < hits.size(); i++) {
-					checkShipInHit(hits[i], currentMap, height, length, currentShips, zalp);
+					checkShipInHit(hits[i], currentMap, height, length, currentShips, zalp, hitedBoards);
+				}
+				if (hits.size() != 0) {
+					killShip(hits, currentMap, currentShips, hitedBoards);
 				}
 			}
 			currentShips.countReadyShip--;
@@ -120,7 +123,35 @@ void Ships::checkShipInHit(pair<int, int>& pairXY, vector<vector<Cell>>& current
 	}
 }
 
-bool Ships::isMine(pair<int, int>& pairXY, vector<vector<Cell>>& map, int height, int length, Ships& enemyShips, bool& zalp, Ships& myShips) {
+void Ships::killShip(vector<pair<int, int>>& hits, vector<vector<Cell>>& currentMap, Ships& currentShips, vector<pair<int, int>>& hitedBoards) {
+	for (int i = 0; i < hits.size(); i++) {
+		pair<int, int> pairXY = hits[i];
+		Ship* tempShip = nullptr;
+		vector<Ship*> ships = currentShips.allShips;
+
+		for (Ship* ship : ships) {
+			auto it = ship->coordinatesShip.find(pairXY);
+			if (it != ship->coordinatesShip.end()) {
+				tempShip = ship;
+				break;
+			}
+		}
+		if (tempShip) {
+
+			for (int j = 0; j < tempShip->coord.coorXY.size(); j++) {
+				int x = tempShip->coord.coorXY[j].first;
+				int y = tempShip->coord.coorXY[j].second;
+					
+				if (!currentMap[x][y].isHit) {
+					hitedBoards.push_back(make_pair(x, y));
+				}
+			}
+			
+		}
+	}
+}
+
+bool Ships::isMine(pair<int, int>& pairXY, vector<vector<Cell>>& map, int height, int length, Ships& enemyShips, bool& zalp, Ships& myShips, vector<pair<int, int>>& hitedBoards) {
 	for (int i = 0; i < enemyShips.allMines.size(); i++) {
 		if (enemyShips.allMines[i].coordinatesMine == pairXY) {
 			int x = pairXY.first;
@@ -135,8 +166,7 @@ bool Ships::isMine(pair<int, int>& pairXY, vector<vector<Cell>>& map, int height
 			else if (map[x][y].isShip && !map[x][y].isHit) {
 				map[x][y].isHit = 1;
 				map[x][y].isHitFromMine = 1;
-				Allhits.push_back(make_pair(x, y));
-				enemyShips.checkShipInHit(pairXY, map, height, length, myShips, zalp);
+				enemyShips.checkShipInHit(pairXY, map, height, length, myShips, zalp, hitedBoards);
 			}
 			enemyShips.countReadyMines--;
 			return true;
@@ -144,3 +174,4 @@ bool Ships::isMine(pair<int, int>& pairXY, vector<vector<Cell>>& map, int height
 	}
 	return false;
 }
+

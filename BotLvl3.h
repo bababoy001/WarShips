@@ -4,7 +4,7 @@ using namespace std;
 class BotLvl3 : public Bot {
 public:
     BotLvl3();
-    pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines) override;
+    pair<int, int> attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines, pair<int, int >& pairHitedBoards) override;
 
 private:
     pair<int, int> firstHit;

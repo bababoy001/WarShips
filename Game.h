@@ -34,6 +34,8 @@ private:
     bool zalp = 0;
     int zalpNum = 0;
     vector<vector<Cell>> createMap();
+    vector<pair<int, int>> hitedBoards;
+    pair<int, int> pairHitedBoards = make_pair(-1,-1);
     void enterSettings();
     pair<int, int> attackPlayer(vector<vector<Cell>>& currentMap, int height, int length);
     vector<pair<int, int>> mines;

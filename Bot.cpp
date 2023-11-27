@@ -1,6 +1,6 @@
 #include "Bot.h"
 using namespace std;
-pair<int, int> Bot::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines) {
+pair<int, int> Bot::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines, pair<int, int >& pairHitedBoards) {
 	int x;
 	int y;
 
@@ -8,7 +8,7 @@ pair<int, int> Bot::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, i
 
 	if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
 		printAll.printSentence("This cell already hitted");
-		return attack(playerTurn, currentMap, height, length, currntPlayerShips, mines);
+		return attack(playerTurn, currentMap, height, length, currntPlayerShips, mines, pairHitedBoards);
 	}
 
 	if (currentMap[x][y].isMine) {

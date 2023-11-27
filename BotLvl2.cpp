@@ -3,7 +3,7 @@
 using namespace std;
 BotLvl2::BotLvl2() : firstHit(-1, -1), lastHit(-1, -1), destroying(false), directionIndex(0), foundDirection(false), attempt(0), lastPlayerShips(0){}
 
-pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines) {
+pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines, pair<int, int >& pairHitedBoards) {
     int x, y;
     if (currntPlayerShips < lastPlayerShips ) {
         attempt = 0;
@@ -12,13 +12,9 @@ pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMa
     }
     lastPlayerShips = currntPlayerShips;
     botShoot(currentMap, height, length, x, y);
-    //if (!check.isCellInMap(x, y, height, length)) {       //видалити після перевірок
-    //    printAll.printSentence("Wrong coordinates Bot");
-    //    return attack(playerTurn, currentMap, height, length, currntPlayerShips);
-    //}
     if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
         printAll.printSentence("This cell already hitted");
-        return attack(playerTurn, currentMap, height, length, currntPlayerShips, mines);
+        return attack(playerTurn, currentMap, height, length, currntPlayerShips, mines, pairHitedBoards);
     }
    
     if (currentMap[x][y].isMine) {
@@ -44,11 +40,8 @@ pair<int, int> BotLvl2::attack(bool& playerTurn, vector<vector<Cell>>& currentMa
 
 void BotLvl2::botShoot(vector<vector<Cell>>& currentMap, int height, int length, int& x, int& y) {
     if (!destroying) {
-        x = rand() % height;            //розкоментувати після перевірки
-        y = rand() % length;
-        //printAll.cinCoord(x, y);      //видалити після перевірок
-
-        
+        x = rand() % height;
+        y = rand() % length;      
     }
     else {
         findNextTarget(currentMap, x, y, height, length);
@@ -59,7 +52,6 @@ void BotLvl2::findNextTarget(vector<vector<Cell>>& currentMap, int& x, int& y, i
     if (attempt >= 4) {
         x = -1;
         y = -1;
-        printAll.printSentence("attempt attempt");  //перевірка
         return;
     }
 

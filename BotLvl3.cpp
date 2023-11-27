@@ -3,7 +3,7 @@
 using namespace std;
 BotLvl3::BotLvl3() : firstHit(-1, -1), lastHit(-1, -1), destroying(false), directionIndex(0), foundDirection(false), attempt(0), lastPlayerShips(0) {}
 
-pair<int, int> BotLvl3::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines) {
+pair<int, int> BotLvl3::attack(bool& playerTurn, vector<vector<Cell>>& currentMap, int height, int length, int currntPlayerShips, vector<pair<int, int>>& mines, pair<int, int > &pairHitedBoards) {
     int x, y;
     if (currntPlayerShips < lastPlayerShips) {
         attempt = 0;
@@ -18,12 +18,19 @@ pair<int, int> BotLvl3::attack(bool& playerTurn, vector<vector<Cell>>& currentMa
         destroying = 1;
         mines.erase(mines.begin());
     }
-
-    botShoot(currentMap, height, length, x, y);
+    if (pairHitedBoards != make_pair(-1, -1)) {
+        x = pairHitedBoards.first;
+        y = pairHitedBoards.second;
+        pairHitedBoards = make_pair(-1, -1);
+    }
+    else {
+        botShoot(currentMap, height, length, x, y);
+    }
+    
 
     if (currentMap[x][y].isHit || currentMap[x][y].isMiss) {
         printAll.printSentence("This cell already hitted");
-        return attack(playerTurn, currentMap, height, length, currntPlayerShips, mines);
+        return attack(playerTurn, currentMap, height, length, currntPlayerShips, mines, pairHitedBoards);
     }
 
     if (currentMap[x][y].isMine) {
@@ -50,11 +57,8 @@ pair<int, int> BotLvl3::attack(bool& playerTurn, vector<vector<Cell>>& currentMa
 
 void BotLvl3::botShoot(vector<vector<Cell>>& currentMap, int height, int length, int& x, int& y) {
     if (!destroying) {
-        //x = rand() % height;            //розкоментувати після перевірки
-        //y = rand() % length;
-        printAll.cinCoord(x, y);      //видалити після перевірок
-
-
+        x = rand() % height;
+        y = rand() % length;
     }
     else {
         findNextTarget(currentMap, x, y, height, length);
@@ -63,7 +67,6 @@ void BotLvl3::botShoot(vector<vector<Cell>>& currentMap, int height, int length,
 
 void BotLvl3::findNextTarget(vector<vector<Cell>>& currentMap, int& x, int& y, int height, int length) {
     if (attempt >= 4) {
-        printAll.printSentence("attempt attempt");  //перевірка
         attempt = 0;
         destroying = 0;
         foundDirection = 0;
